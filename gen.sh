@@ -1,0 +1,1 @@
+pdflatex revitalizing-dce.tex  && google-chrome *.pdf
