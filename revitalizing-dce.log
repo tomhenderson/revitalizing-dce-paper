@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.3)  6 SEP 2021 20:28
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.3)  6 SEP 2021 21:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -323,7 +323,7 @@ LaTeX Font Warning: Font shape `TS1/aer/m/n' undefined
 
 
 ]
-Overfull \hbox (3.14023pt too wide) in paragraph at lines 240--248
+Overfull \hbox (3.14023pt too wide) in paragraph at lines 239--247
 \T1/aer/m/n/9 be-tween \T1/aer/m/it/9 __stop___libc_IO_vtables \T1/aer/m/n/9 an
 d \T1/aer/m/it/9 __start___libc_IO_vtables\T1/aer/m/n/9 ,
  []
@@ -361,7 +361,7 @@ share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texliv
 e/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fo
 nts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/t
 imes/utmri8a.pfb>
-Output written on revitalizing-dce.pdf (3 pages, 154380 bytes).
+Output written on revitalizing-dce.pdf (3 pages, 154467 bytes).
 PDF statistics:
  72 PDF objects out of 1000 (max. 8388607)
  52 compressed objects within 1 object stream
