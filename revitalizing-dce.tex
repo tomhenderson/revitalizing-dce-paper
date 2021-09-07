@@ -50,6 +50,7 @@
 
 \usepackage{xcolor}
 \usepackage{listings}
+\usepackage{titlesec}
 
 \lstdefinestyle{CStyle}{
     basicstyle=\footnotesize,
@@ -65,6 +66,11 @@
     tabsize=2,
     language=C
 }
+
+\setcounter{secnumdepth}{4}
+
+\titleformat{\paragraph}
+{\normalfont\normalsize}{\theparagraph}{1em}{}
 
 \begin{document}
 %
@@ -260,10 +266,47 @@ uses dlmopen udner the hood to load the executable into memory. In glibc version
 PIE objects being loaded through dlmopen, and in case it finds the \textbf{DF\_1\_PIE} flag in it's ELF Dynamic headers, if would abort with an error.
 
 
-\subsection{Linux Networking Stack for DCE (LKL vs LibOS) }
-Talk about other DTN simulators/modules: the ONE \cite{one} , omnet++ \cite{omnet}, there are also some modules for ns-2 (not totally sure).
+\subsection{Linux Networking Stack for DCE}
+DCE is by nature of ns-3 designed for writing network simulations and achieve real world like results. It makes is necessary for it to provide script 
+writers with freedom to choose which networking stack they would want to make use of for their simulation script. We currently support the following 
+networking stacks : Linux, ns-3 and FreeeBSD. Script writers can configure the \textit{DceManager} class by setting the network stack to what they preffer.
+Currenly, the Linux network stack is based on net-next-nuse-4.4.0, which is built on top of base Linux kernel version 4.4.0. net-next-nuse is a library 
+port of the Linux kernel, which does selective linking of requried kernel modules and components such as the networking, VFS, MMU, etc. layers, patching 
+the holes with glue code, exporting DCE useful callback structures, abstracting the internal network data flow, also syncing Linux kernel synchronization, 
+process creating, and DCE-kernel task, IRQ and tasklet scheduling and synchronization, to expose a Linux like execution bed for host applications. 
 
-This subsection may be worth moving to the introduction as just a simple paragraph
+Since Linux kernel 4.4.0, the later Linux kernel releases have had major developements in almost all kernel compoenents, but for our specific use case
+the networing stack has seen major changes in several components such as the TCP Timer, Jiffies and clock HZ usage, napi working and internal enums 
+and state definitions and checks, Packet flow, checksum and offloading hardennings, newer congestion control algorithms, ucounts API, etc. 
+The current Linux kernel networking stack does suffice for now, but hasn't kept pace with the current research needs. 
+
+\subsubsection{LKL}
+LKL also known as Linux Kernel Library, is a library port of the Linux kernel which through some pre-shipped helper shell scripts can be used to hijack
+all system calls made by the host application and map it through the ported Linux kernel rather than system defined implementations. It also allows one 
+to setup network interfaces such as TAP, RAW, VDE , etc. with custom gateways, masks, IPs, etc. with the help of json configuration files. These helper
+shell scripts make use of LD\_PRELOAD to reorder library loading to LKL written system calls to take control in place of the libc defined routines.
+
+\subsubsection{LibOS}
+LibOS can also be reffered to what internal architecture net-next-nuse uses under the hood. It is also a Lixnu kernel port which works on selective 
+kernel module linking and patching on the go working princinple. It defines special link time constructs to include only specific kernel files and 
+symbols which are needed for executing on top of the Linux kernel with \textit{nuse}, which works similar to LKL in terms of hijacking system calls 
+and rerouting them through nuse and kernel defined routines. It only links kernel components which lets LibOS start the kernel and run all \textit{\_\_initcall}(s)
+which are defined with a \textit{\_\_init} and registered as as a initcall using special macros. Thes routines are linked into special \textit{.INIT} 
+setions of the final linked library. These components include critical parts such \textit{kernel}, \textit{net} and other selective parts of \textit{proc},
+\textit{mm}, \textit{fs} , \textit{drivers}, etc. 
+
+\subsubsection{LKL vs. LibOS}
+Below is a parameter wise comparison of LKL and LibOS on the various design decisions which become critical for a complex application framework like 
+DCE with very specific demands from it's underying network stack.
+
+\paragraph{Linux Kernel Support}
+sdsd
+\paragraph{In-Library Kernel Boot Order}
+sdsd
+\paragraph{Compatibility}
+sdsd
+\paragraph{Maintenance}
+sdsds
 
 \section{Solutions}
 \label{section:design}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.3)  7 SEP 2021 20:34
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.3)  7 SEP 2021 21:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -225,29 +225,45 @@ File: listings.cfg 2019/09/10 1.8c listings configuration
 ))
 Package: listings 2019/09/10 1.8c (Carsten Heinz)
 
-(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
+(/usr/share/texlive/texmf-dist/tex/latex/titlesec/titlesec.sty
+Package: titlesec 2019/10/16 v2.13 Sectioning titles
+\ttl@box=\box53
+\beforetitleunit=\skip54
+\aftertitleunit=\skip55
+\ttl@plus=\dimen161
+\ttl@minus=\dimen162
+\ttl@toksa=\toks38
+\titlewidth=\dimen163
+\titlewidthlast=\dimen164
+\titlewidthfirst=\dimen165
+
+
+Package titlesec Warning: Non standard sectioning command \subparagraph
+(titlesec)                detected. Using default spacing and no format.
+
+) (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdfmode.def
 File: l3backend-pdfmode.def 2020-02-03 L3 backend support: PDF mode
 \l__kernel_color_stack_int=\count270
-\l__pdf_internal_box=\box53
+\l__pdf_internal_box=\box54
 )
 (./revitalizing-dce.aux)
 \openout1 = `revitalizing-dce.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Trying to load font information for T1+aer on input line 69
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 75.
+LaTeX Font Info:    ... okay on input line 75.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 75.
+LaTeX Font Info:    ... okay on input line 75.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 75.
+LaTeX Font Info:    ... okay on input line 75.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 75.
+LaTeX Font Info:    ... okay on input line 75.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 75.
+LaTeX Font Info:    ... okay on input line 75.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 75.
+LaTeX Font Info:    ... okay on input line 75.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 75.
+LaTeX Font Info:    ... okay on input line 75.
+LaTeX Font Info:    Trying to load font information for T1+aer on input line 75
 .
  (/usr/share/texlive/texmf-dist/tex/latex/ae/t1aer.fd
 File: t1aer.fd 1997/11/16 Font definitions for T1/aer.
@@ -255,16 +271,16 @@ File: t1aer.fd 1997/11/16 Font definitions for T1/aer.
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count271
-\scratchdimen=\dimen161
-\scratchbox=\box54
+\scratchdimen=\dimen166
+\scratchbox=\box55
 \nofMPsegments=\count272
 \nofMParguments=\count273
-\everyMPshowfont=\toks38
+\everyMPshowfont=\toks39
 \MPscratchCnt=\count274
-\MPscratchDim=\dimen162
+\MPscratchDim=\dimen167
 \MPnumerator=\count275
 \makeMPintoPDFobject=\count276
-\everyMPtoPDFconversion=\toks39
+\everyMPtoPDFconversion=\toks40
 ) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
@@ -275,31 +291,31 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 \c@lstlisting=\count277
-LaTeX Font Info:    Trying to load font information for U+msa on input line 139
+LaTeX Font Info:    Trying to load font information for U+msa on input line 145
 .
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 139
+LaTeX Font Info:    Trying to load font information for U+msb on input line 145
 .
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for U+lasy on input line 13
-9.
+LaTeX Font Info:    Trying to load font information for U+lasy on input line 14
+5.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
 LaTeX Font Info:    Trying to load font information for T1+aett on input line 1
-40.
+46.
 
 (/usr/share/texlive/texmf-dist/tex/latex/ae/t1aett.fd
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
 )
-Overfull \hbox (5.00298pt too wide) in paragraph at lines 142--153
+Overfull \hbox (5.00298pt too wide) in paragraph at lines 148--159
 \T1/aer/m/n/9 mis-sion re-li-a-bil-ity in De-lay Tol-er-ant Net-works (DTNs). D
 TNs
  []
@@ -311,40 +327,43 @@ File: lstlang1.sty 2019/09/10 1.8c listings language file
 File: lstmisc.sty 2019/09/10 1.8c (Carsten Heinz)
 )
 LaTeX Font Info:    Trying to load font information for TS1+aer on input line 1
-92.
-LaTeX Font Info:    No file TS1aer.fd. on input line 192.
+98.
+LaTeX Font Info:    No file TS1aer.fd. on input line 198.
 
 
 LaTeX Font Warning: Font shape `TS1/aer/m/n' undefined
 (Font)              using `TS1/cmr/m/n' instead
-(Font)              for symbol `textasteriskcentered' on input line 192.
+(Font)              for symbol `textasteriskcentered' on input line 198.
 
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
 ]
-Overfull \hbox (3.14023pt too wide) in paragraph at lines 239--247
+Overfull \hbox (3.14023pt too wide) in paragraph at lines 245--253
 \T1/aer/m/n/9 be-tween \T1/aer/m/it/9 __stop___libc_IO_vtables \T1/aer/m/n/9 an
 d \T1/aer/m/it/9 __start___libc_IO_vtables\T1/aer/m/n/9 ,
  []
 
 
-Underfull \vbox (badness 1199) has occurred while \output is active []
+Overfull \hbox (8.06946pt too wide) in paragraph at lines 255--259
+\T1/aer/m/n/9 PIE or position-independent-executables are ap-pli-ca-tions com-
+ []
 
- [2]
-(./revitalizing-dce.bbl) [3] (./revitalizing-dce.aux)
+[2] (./revitalizing-dce.bbl [3]) [4
+
+] (./revitalizing-dce.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 4987 strings out of 483183
- 62394 string characters out of 5966293
- 536562 words of memory out of 5000000
- 19919 multiletter control sequences out of 15000+600000
- 586586 words of font info for 90 fonts, out of 8000000 for 9000
+ 5281 strings out of 483183
+ 66112 string characters out of 5966293
+ 541381 words of memory out of 5000000
+ 20208 multiletter control sequences out of 15000+600000
+ 587722 words of font info for 91 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 46i,11n,60p,475b,1650s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 46i,11n,60p,475b,1652s stack positions out of 5000i,500n,10000p,200000b,80000s
  </home/parth27/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0900.6
 00pk>{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/tex
 live/texmf-dist/fonts/type1/public/amsfonts/cm/cmb10.pfb></usr/share/texlive/te
@@ -359,10 +378,10 @@ share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texliv
 e/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fo
 nts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/t
 imes/utmri8a.pfb>
-Output written on revitalizing-dce.pdf (3 pages, 157640 bytes).
+Output written on revitalizing-dce.pdf (4 pages, 164980 bytes).
 PDF statistics:
- 72 PDF objects out of 1000 (max. 8388607)
- 52 compressed objects within 1 object stream
+ 75 PDF objects out of 1000 (max. 8388607)
+ 54 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
