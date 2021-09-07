@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.3)  6 SEP 2021 21:06
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.3)  7 SEP 2021 20:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -332,9 +332,7 @@ d \T1/aer/m/it/9 __start___libc_IO_vtables\T1/aer/m/n/9 ,
 Underfull \vbox (badness 1199) has occurred while \output is active []
 
  [2]
-(./revitalizing-dce.bbl) [3
-
-] (./revitalizing-dce.aux)
+(./revitalizing-dce.bbl) [3] (./revitalizing-dce.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -361,7 +359,7 @@ share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texliv
 e/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fo
 nts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/t
 imes/utmri8a.pfb>
-Output written on revitalizing-dce.pdf (3 pages, 154467 bytes).
+Output written on revitalizing-dce.pdf (3 pages, 157640 bytes).
 PDF statistics:
  72 PDF objects out of 1000 (max. 8388607)
  52 compressed objects within 1 object stream

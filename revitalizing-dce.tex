@@ -246,7 +246,19 @@ where FILE * objects are passed to threads which are not in the currently linked
 overwrite the \textit{\_IO\_jump\_t}, it does not lie in \textit{libio\_IO\_vtables} section and it also does not pass the pointer mangling sanity checks, leading to a \textit{\_\_libc\_fatal (\"Fatal error: glibc detected an invalid stdio handle\");}
 
 \subsection{PIE loading and usage}
-Describe how reliability is achieved, introduce headers and types of segments (data, reports, etc.), distinction between red and green data.
+PIE or position-independent-executables are applications compiled with special compiler flags, which allow the application to be loaded into random 
+memory address, not depending on absolute symbol addresses, avoiding exploits which hijack the call stack by referencing constant function/symbol addresses.
+In the case of a PIE, every memory address is accessed with refference to what is called the \textit{\%rip}. The \textit{\%rip} is computed at the time 
+of execution when the application is loaded into virtual memory. This makes it difficult for attackers to determine symbol location in memory.
+
+In DCE, we support the execution of real host application in simulation, bridging the networking layer between the host and the specified networking stack,
+and also other system calls made by the host applications. Since, we might have to load several applications into memory, and alsp have control over the
+position of the \text{main} symbol of the loaded application, we need to have position independent executables, so that when they are loaded into memory,
+the symbol positions in memory are dynamic, giving us control over when an application is launched in a simulation which can be configured in the script 
+using available ns-3 programming constructs for the \textit{DceApplicationManager} class. To implement this, DCE used the \textit{CoojaLoader} which 
+uses dlmopen udner the hood to load the executable into memory. In glibc version newer than 2.25, security checks have been introduced to identify such 
+PIE objects being loaded through dlmopen, and in case it finds the \textbf{DF\_1\_PIE} flag in it's ELF Dynamic headers, if would abort with an error.
+
 
 \subsection{Linux Networking Stack for DCE (LKL vs LibOS) }
 Talk about other DTN simulators/modules: the ONE \cite{one} , omnet++ \cite{omnet}, there are also some modules for ns-2 (not totally sure).
