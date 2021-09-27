@@ -363,6 +363,23 @@ are placed under an unclosed -Wl --start-group, as DCE requires other linker fla
 
 \subsection{Bake Build Automation}
 
+Bake works on a build configuration script called bakconf.xml . The bakeconf.xml file is converted to bakefile.xml after the configuration file is 
+parsed by the Bake module. Based on the bakeconf.xml file creates a build Dependency graph, maintaining build steps, parameters and post build 
+commmands for each Dependency node. Bake dynamimcallly binds Dependency modules based on configuration options specified for each build module 
+defined in the bakeconf.xml. The three mahor steps of a Bake build are, configure, download and build. Bake supports almost all major types of 
+source code fetching methods, ranging from git, mercurial to standard publicly available zipped archive files. In the build step, dependencies 
+are built in the order with modules having no dependencies on other modules, to the module having all dependencies already satisfied. To support 
+the custom glibc build, the dependency graph looked something like this : 
+
+ToDo : Attach Bake Dependency graph ? 
+
+Bake has a source configuration option named patch, which can safely aplly a patch, without re-applying if it has already been applied before.
+Using this option, the custom DCE specfic libc patch is applied, which disables the security checks on vtable mangling, and also disables the 
+pie object checks for dlmopen position independent executable loading. The glibc is then build using standrd build steps. The linux kernel headers
+files are then installed into /usr directory of a custom glibc's sysroot. This leaves with a standard Linux like system root to use for building 
+DCE without any issues. 
+
+
 \subsection{Docker environenment for DCE}
 
 \subsection{net-next-nuse-5.10}

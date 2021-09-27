@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.3)  27 SEP 2021 22:44
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.9.3)  27 SEP 2021 22:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -349,11 +349,20 @@ Overfull \hbox (8.06946pt too wide) in paragraph at lines 255--259
 \T1/aer/m/n/9 PIE or position-independent-executables are ap-pli-ca-tions com-
  []
 
-[2] [3] (./revitalizing-dce.bbl
-Underfull \vbox (badness 10000) has occurred while \output is active []
+[2] [3]
+Overfull \hbox (1.75334pt too wide) in paragraph at lines 366--373
+\T1/aer/m/n/9 Bake works on a build con-fig-u-ra-tion script called bak-conf.xm
+l
+ []
 
-) [4]
-(./revitalizing-dce.aux)
+
+Overfull \hbox (2.2017pt too wide) in paragraph at lines 376--381
+[]\T1/aer/m/n/9 Bake has a source con-fig-u-ra-tion op-tion named patch, which
+ []
+
+(./revitalizing-dce.bbl [4]) [5
+
+] (./revitalizing-dce.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -380,10 +389,10 @@ share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texliv
 e/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fo
 nts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/t
 imes/utmri8a.pfb>
-Output written on revitalizing-dce.pdf (4 pages, 170266 bytes).
+Output written on revitalizing-dce.pdf (5 pages, 172235 bytes).
 PDF statistics:
- 75 PDF objects out of 1000 (max. 8388607)
- 54 compressed objects within 1 object stream
+ 78 PDF objects out of 1000 (max. 8388607)
+ 56 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
