@@ -325,6 +325,41 @@ sdsds
 \label{section:design}
 
 \subsection{Custom glibc-2.31 Based Build}
+On a Linux environements, multiple library systems could be selected to be linked to. A few options are libc are musl. The post-linking structure
+of the generated binary and the libary vary, in terms of the number of static linkages, symbol table, etc. For instance, musl works on the idea of
+single static linkage, in which, the library or executable compiled with musl-gcc, is statically linked to only one musl linked library called 
+ld-musl.so.1, which defines all the symbols required by the application. This reduces the size of the executable to a huge extent, but 
+also does more harm than good to DCE. The initial build step of DCE includes calling a script named dcemakeversion.c. This script is responsible 
+for extracting the symbol table of the libc currently being linked to. All symbols for the libraries libc, libpthread, librt, lib and libdl. These 
+libraries are the various modular extensions of the glibc providing features such as pthreads, math, dynamic library loading and the base libc 
+library as well. The symbols are read from the Elf Headers of the respective shared library .so file, and stored in a local .version .
+
+The symbol table for all these libraries are important for us, as DCE as a build outout generates what is called the libc-ns3.so. This is a shared 
+library which is a wrapper for the local libc and DCE implementations, on top of which host applications are executed. This shared library defines 
+all symbols which are defined in the local libc, as NATIVE and all the features implemented inside DCE as DCE. All other symbols which are new to 
+DCE and not implemented by us, but is a part of the local system libc, is then refferenced in the .version files. These symbols are then defined 
+as well, to avoid any runtime symbol lookup errors. It then generates preprocessor mappings for all the symbols. All DCE defined symbols will 
+natively be mapped to DCE implemented versions of them, rather than the systel libc implementation, and all NATIVE defined symbols will be mapped 
+to global namespace implementations, which are the ones already implemented in the system libc. Users would compile their applications on top of 
+the system libc itself, but with an extra -fPIC and -pie flag, which allows us to load the applications dynamically into out process address 
+space. We then load out libc-ns3.so shared object file, and call out libc\_setup function which initialiazes the system call mappings. We also 
+subsequently load other libraries which we have generated in a similar way, i.e, libpthread-ns3.so , librt-ns3.so , libm-ns3.so and libdl-ns3.so .
+We then finally load the host application, lookup and call the main function of the application, which starts to now work on top of our custom 
+libraries. musl-gcc on the other hand does not support modular libraries for these features, and for all cases would link the single ld-musl.so.1, making it 
+impossible for use to seggregate the symbols for all our different libraries. glibc, on the other hand, works exactly how we would want the standard 
+library to, and links all the standard libraries we require.
+
+In an attempt to override the vtable mangling security checks, it was necessary to use a libc version that matches the system default libc version 
+so that we dont see any symbol lookup errors at runtime because of application built on later libc release and beig loaded into an available namespace
+using dlmopen. But, we also had to override the security checks on vtable pointer mangling. The gcc compiler and linker options could be used to 
+reconfigure the default build environment to build DCE on top of a custom built patched glibc. The default root directory where gcc starts to look for
+libraries, header files, etc. is  '/' on Linux. We need to re-point this directory to out customg glibc root. This is where the --sysroot option 
+is used to set it to correct bake build directory. We then add the custom glibc prioritized directory for library and header file lookup using the 
+-L and -I option respectively. We then set the rpath and rpath-link paths for ELF executables that could be linked to the shared objects at run time 
+or link time respectively. We then set the dynamic linker to one we have build currently, using the -Wl--dynamic-linker flag. Also, all these changes
+are placed under an unclosed -Wl --start-group, as DCE requires other linker flags, which when added we insert the ending -Wl --end-group.
+
+
 
 \subsection{Bake Build Automation}
 
