@@ -300,7 +300,20 @@ Below is a parameter wise comparison of LKL and LibOS on the various design deci
 DCE with very specific demands from it's underying network stack.
 
 \paragraph{Linux Kernel Support}
-sdsd
+LKL, which was primarily designed to work as Linux-as-Library interface for application to be dynamically linked to at runtime, is built on top of 
+Linux 5.2. The kernel port design of LKL, favours kernel version upgradation with little to no efforts. Abstractly, the kernel upgradation process 
+would include a git rebase on the kernel version we would want to use, and project should compile with no major issues to deal with (some minor compiler, 
+and Linux kernel header definition changes might come up, which should be resolvable with a bit of effors).
+
+LibOS, which makes use of dynamic selective Linux kernel linking, bridges the gap between application workspace and Linux kernel networking stack with
+the help of glue code, kernel component connector code, and user application provided exported functions and callbacks for proper execution. This
+architecture required LibOS to modify some of the internal Linux kernel files for additional compoenets such as the slab allocator, which requires 
+LibOS to setup preprocessor directives to select out SLAB allocator for specific Kconfig defined compiler directive, to pass on control to LibOS routines 
+whenever required. Currenly LibOS supports Linux kernel 4.4.0. Upgrading to a newer Linux kernel version might be an intense process requiring one 
+to deal with issues from header file changes, to complete changes in kernel components like the networking layer, memory maqnagement, namespace manager 
+and kernel boot process.
+
+
 \paragraph{In-Library Kernel Boot Order}
 sdsd
 \paragraph{Compatibility}
@@ -319,10 +332,6 @@ sdsds
 
 \subsection{net-next-nuse-5.10}
 
-Communication between the LTP engine and the Client Service Instance can happen both ways. 
-The client service makes requests to the LTP engine (start or cancel transmission) and 
-the LTP engine issues back notifications (to report certain events or hand over received data). 
-The design of these communications is a local implementation matter, in the ns-3 module:
 
 \begin{itemize}
  \item Requests are provided in the form of API functions ...
