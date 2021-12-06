@@ -335,10 +335,15 @@ scheduler's. LibOS creates an ns-3 task copy for each kernel task which is creat
 etc. kernel functions. Each such task maps with itself a callback function which should be called once the wait time
 for a task is over, or has been invoked as a part of a regular scheduling process. Once tasks are processed, it is
 also popped off the ns-3 task queue.
-\paragraph{Compatibility}
-sdsd
 \paragraph{Maintenance}
-sdsds
+LKL, was designed to be a low maintenace Linux-As-A-Library interface, which exposes Linux subsystems through overided UNIX system calls. 
+Since, LKL is an architecture level port of the Linux kernel, isolating LKL specific code to the arch and tools Linux folders, moving on to 
+newer or custom releases induces less cost as compared to LibOS, which works on dynamic component compiling \& linking build system through a
+custom Makefile, where are Linux files and modules to be compiled and linked to the final nuse shared object file, should be explicitly mentioned,
+and this listing should be exhaustive, assuring no function calls are being made by any critical component to another component which does not 
+exist, and if it does, we need to fullfill the depedency graph for all such modules and file. This makes migrating to newer versions of Linux kernel,
+or for that matter, simply debugging kernel internals, requires more effort as one is not sure if it's the glue code that's malfunctioning, or is it
+the allocator or the ns-3 synced scheduler causing trouble.
 
 \section{Solutions}
 \label{section:design}
@@ -402,6 +407,237 @@ DCE without any issues.
 \subsection{Docker environenment for DCE}
 
 \subsection{net-next-nuse-5.10}
+Net-Next-Nuse is an architecture port of the Linux Kernel, which resorts to selective kernel module linking and takes control over critical kernel 
+components such as the slab allocator, task scheduler, workqueue-waitqueue handling, timer based function invocation, as well as some kernel 
+utilities such as jiffies and random number generators. It also sets up emulations of the network system calls for both general socket networking 
+operations as well netdevice based operations. All of this is exposed through an API initialised by a simulator initialisation call, sim\_init, 
+which does a bidirectional mapping of the imported(DCE → Linux) and exported(Linux → DCE) function utilities.
+
+\subsubsection{Background}
+The implementation of net-next-nuse strictly considers only the use case of DCE and thus might not find application outside of DCE unlike LKL which
+is designed for running a plethora of networking applications, but it fits in really well when it comes to DCE. 
+
+Let's start with the Makefile design of net-next-nuse, because that's where the story begins. When Linux builds, apart from all other files, it generates 
+two important files vmlinuz and initramfs. The file vmlinux is where all the kernel code(/kernel /mm /fs /net /security ...) is compiled and 
+linked. When it comes to LKL, all it does it does a raw objcopy on the generated object files vmlinux and copies all symbols from vmlinux along 
+with the global functions exported from the LKL arch port, and combines them into a final library called lkl.o, which is then passed on to the 
+tools/lkl, to link the host, netdevice, utility, filesystem, and networking handler codes to make the final liblkl.so shared library. 
+Seems good right ? Well, it did seem to me when I wrote my proposal, until I identified how it could actually become a bottleneck. 
+
+Now let’s see how net-next-nuse does it. net-next-nuse understands that the way Linux Kernel behaves on the host, and the way the kernel interacts with the task 
+scheduler and how the scheduler operates on the tasks, is completely different from how DCE manages fibers(called task in DCE terminologies). 
+DCE is based on context based light weight threads called fibers, which require a custom scheduler, called TaskManager in DCE. On an ordinary
+host machine when you run any application, and then you spin up normal threads, you would not need to bother about scheduling the threads on 
+the different cores of your cpu and maintaining mutex locks of the cpu, making the kernel responsible for jumping from one thread to another. 
+But when you use fibers, you can jump from one thread to another only when one of the fibers yields to another fiber, and this context switch 
+is done by a custom scheduler, which is written in TaskManager::Schedule(). Wonder how that is good ? Because when you use ordinary threads, 
+the number of context switches the CPU has to do (push your thread data stack on to you address space, in and out), is a lot more expensive 
+than making switches in Fibers.
+
+That seems good though, but now we have a problem. We have a scheduler inside DCE, but now when we load a linux kernel library, we also 
+have a scheduler that comes along with it. So, every new operation that you make inside the kernel creates something called a (virtual) 
+kernel thread. But, how do we manage those threads, because the DCE TaskManager cannot see them because it’s virtual. That’s where net-next-nuse 
+comes into play, it does a selective linking of kernel modules and utilities and avoids linking of the scheduler, workqueue, waitqueue 
+and other such linked components, and rather implements them using DCE imported functions which maps to TaskManager utilities. So everytime 
+some process wants to preempt and block, the kernel calls schedule() or schedule\_timeout(), and we pass control to DCE to take care of it. 
+
+\subsubsection{Slib Allocator}
+When the kernel is booted up by net-next-nuse in lib\_init(...), it calls some of the required initialisation functions, and all, included, initcalls. 
+Most of these initcalls require us to create a memory cache object called kmem\_cache. These memory slabs are used to allocate memory to child 
+objects. It uses functions like kmem\_cache\_alloc(...) and functions as simple as kmalloc(...) to allocate space for a pointer object. Now, the 
+kernel already has slab allocators like, SLUB and SLOB, but all of them allocate space internally, giving no control to DCE. We thus use a custom 
+SLAB allocator called SLIB, which calls internal DCE malloc(...) functions and sets up kmem\_cache data structures and ctor’s etc. It also 
+implements compound and single page operations like \_put\_page(...), kfree(...)  and array space allocation. 
+
+\subsubsection{Virtual Kernel Task and its Real Fiber Equivalent}
+Let’s talk a little about how threads are internally managed in the kernel. For every new task inside the kernel, for example, a syscall, 
+creates an internal kernel thread. Now originally when a system boots up, there has to be some initial task that invokes the start\_kernel(...) 
+function. This is called the init\_task. Whenever a new kernel thread is to be created, we make a call to kernel\_thread(...). Along with the 
+function that is to be invoked in the thread, and the arguments to be passed, we also need to pass along one more argument, known as clone flags. 
+Internally, the kernel will try to clone a previous task (or you can say the init\_task), as much as possible. These flags basically determine 
+how far the kernel should go, as in cloning the structures. Some of the flags are CLONE\_FS, CLONE\_VM, CLONE\_FILES, etc. kernel\_clone(...) and 
+passes a special clone flags data structure. This function further calls copy\_process(...). copy\_process(...) is responsible for checking which 
+flags are enabled using a bitwise \& operator and calling the corresponding copy utility, for example copy\_fs(...), copy\_files(...), copy\_cred(...),
+It also makes a call to dup\_task\_struct(...), which will bind changes of the current task\_struct to a new one and return it back. After we get 
+back a proper task\_struct, the kernel\_clone(...) schedules a fork for the newly created tNNask.
+
+But the point is, we don’t need most of it ? Why ?  Because it’s irrelevant to us. DCE is not a complete architecture level port and thus lacks a 
+clear definition of init\_task. So, for the very first kernel\_thread the current task would be init\_task, so not having a proper definition of it, 
+creates a domino effect making all subsequent taks having incomplete structure, leading to possible SEGFAULTS. Another reason is, we do not use 
+the kernel scheduler, rather we need to fork a kernel thread in such a way that the DCE scheduler can see it, and every time 
+TaskManager::TaskWait(...)  is called on a particular task, we can put the current job to sleep, and give the other tasks/fibers a chance to 
+execute their set of functions. 
+
+So, to take  control over the kernel thread creation, we rewrite the kernel\_thread(...) function to call lib\_task\_start(...), which calls the 
+internal TaskManager::Start(...) to create a DCE task, fills up the task\_struct, sets the SimTask context with the task\_struct and returns back 
+the pid of the task. Also current as previously referred to before, is not a variable. It’s a MACRO, which calls get\_current(...) which we hijack 
+and lead to TaskManager::TaskCurrent(...), which checks if the current task has a SimTask context, if it does, it returns it back. 
+If it does not, it calls TaskManager::Start(...) to set it up.
+ 
+
+\subsubsection{Scheduler Workqueue/Waitqueue Implementation}
+Most of the scheduling code can be found in the /kernel directory of the Linux Kernel. This is very important to us and so we never compile the 
+original kernel implementation for the scheduler. We rather implement all the key functionalities used by the networking stack. So, 
+question is, if we are not running any applications inside the kernel, why do we even need to schedule anything ? The answer to this is 
+blocking network calls. Imagine you creating a socket, binding and listening to it and then you make an accept(...) call, and the client 
+application doesn’t seem to ever come up. The system would go to a standstill if it did not schedule the client application for it to issue a 
+corresponding connect(...) call. And that’s one of the issues with LKL [4.2]. That is why we avoid linking those files, and rather pass 
+majority of the control to DCE, but without making a single change in code, because DCE also has to work when simulation scripts use the 
+default ns-3 network stack. We thus rewrite certain functions. Below a few function and concepts have been discussed : 
+schedule() : 
+schedule\_timwout() :
+lib\_task\_wait() :
+lib\_task\_yield() : 
+add\_timer() : 
+mod\_timer() :
+init\_timer\_key() :
+do\_softirq() :
+open\_softirq() :
+queue\_work\_on() :
+
+\subsubsection{Jiffies Timer}
+The Linux kernel management of time is based on the use of the global jiffies variable
+which contains a 32bit integer that reports the number of ticks elapsed since the boot of
+the kernel. The duration of each tick depends on the way the kernel was configured but
+nowadays, it is usually configured to be one millisecond. The jiffies variable is normally
+increased whenever the kernel timer interrupt is triggered. This timer interrupt is also
+responsible for executing any expired kernel timers every ten millisecond, etc.
+[22, 19] both deal with this by executing periodically a per-node event that increases
+the jiffies variable and relies on the Linux kernel code to deal with its internal timers. This
+approach suffers sadly from one major drawback: even if there are no timers scheduled to
+expire for the next 10 or 80 milliseconds, the simulation will keep running and executing
+events, just for the sake of incrementally increasing the value of this jiffies variable.
+Rather than waste time to do this, we instead configure the Linux kernel to not use periodic
+ticks with CONFIG NOHZ and then replace entirely the kernel timer facility to schedule
+simulation events for each kernel timer instead of keeping track of the kernel events in a
+data structure separate from the main simulation event list. The resulting kernel network
+stack thus runs in tickless mode and does not waste time scheduling unnecessary events.
+
+
+\subsubsection{Kernel Initialisation}
+The Kernel initialisers are divided into base init functions and roughly 8 levels of initcalls and exports a start and end pointer of the list. 
+Init functions are the ones directly called in the start\_kernel(...) or by certain device drivers, whereas initcalls are the ones which are stored 
+in a special .initcall.init section of the final linked library. These are then copied to their respective positions through the linker.lds script.
+In out lib\_init function I call specific init functions, namely : 
+vfs\_caches\_init\_early
+rcu\_init
+devices\_init 
+buses\_init
+radix\_tree\_init
+timekeeping\_init
+cred\_init
+uts\_ns\_init 
+vfs\_caches\_init 
+seq\_file\_init 
+proc\_root\_init
+I also changed the initcall invocation loop of lib\_init to this : 
+\begin{lstlisting}[style=CStyle] 
+   initcall_entry_t *call;
+   extern initcall_entry_t __initcall_start[], __initcall_end[];
+ 
+   call = __initcall_start;
+   do {               
+       initcall_from_entry(call)();               
+       call++;    
+   } while (call < __initcall_end);
+
+	Before we call all the init functions, I also added these two lines of code : 
+
+   files_cachep = kmem_cache_create("files_cache",
+           sizeof(struct files_struct), 0,
+           SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT,
+           NULL);
+ 
+   fs_cachep = kmem_cache_create("fs_cache",
+           sizeof(struct fs_struct), 0,
+           SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT,
+           NULL);
+\end{lstlisting}
+	These caches are required while setting up the fs\_struct and files\_struct for each new task in it’s corresponding task\_struct. Please see [5.9].
+
+
+\subsubsection{Security LSM Module}
+The security module of the Linux kernel depends on a special configuration called the CONFIG\_LSM. The LSM module requires a few architecture 
+defined variables. Surprisingly, you cannot find them in the source code(.c or .h files) anywhere, rather they are placed in a specific section 
+of the library/binary called .init.data section, through ASM code. net-next-nuse makes use of a linker script which can help us position variables inside 
+the library under specific sections. I had to put this code in the linker.lds to initialise the start and end of the LSM table. 
+\begin{lstlisting}[style=CStyle] 
+  . = ALIGN(CONSTANT (MAXPAGESIZE));
+  .init.data : AT(ADDR(.init.data)) {    
+		__start_lsm_info = .;	
+		KEEP(*(.lsm_info.init))
+		__end_lsm_info = .;    
+		__start_early_lsm_info = .;	
+		KEEP(*(.early_lsm_info.init))
+		__end_early_lsm_info = .;
+  }
+\end{lstlisting}
+vfs\_kern\_mount(...) validates and parses params using security\_fs\_context\_parse\_param(...), which checks if the requested operation was blocked 
+in the LSM tables. If this module is not enabled, it would return back ENOPARAM by default and fail. 
+
+
+\subsubsection{Kernel Code - net-next-nuse Alignment}
+I had to remove the panic\_on\_taint symbol, which got exported while linking kernel/panic.c(we need to have this file for acknowledging kernel 
+runtime errors) and accessing it in kernel/sysctl.c caused errors because it couldn’t find it back. Also, having this made no sense, as its value 
+defaults to 0 and never changes during program execution. When the kernel gets initialized, it called mnt\_init, which is responsible for setting 
+up the kernel file system (kernfs), the sysfs, ramfs, etc. and then makes a call to init\_mount\_tree, which sets up the required namespace for the 
+all the mounts. This function will then make a corresponding call to vfs\_kern\_mount, which will use the vfs setup to initialise the file systems 
+we need. vfs\_kern\_mount will set up the file context and mount it. In this process it checks for the security module and the LSM entries, to check 
+if the kernel was not previously configured to avoid declaration of the specified namespace. If all checks pass, it returns back a vfsmount 
+pointer. We then use this pointer to set up a mount namespace which initialises the data structure mt\_namespace, using alloc\_mnt\_ns . To 
+initialize the mnt\_namespace object, we require the current tasks nsproxy, which is the user namespace proxy member. Every task is required to 
+define some initial maximum value for each namespace it might require during the execution of the task. Similarly, for allocating a mount 
+namespace it increases the UCOUNT\_MNT\_NAMESPACES of the current task’s nsproxy which has an upper bound of init\_task ‘s value. Since, we are not 
+doing a complete arch port (we don’t need to), this value is not defined, and would through a SEGFAULT, when READ\_ONCE(...) tries to make an 
+atomic operation on it to access it and increase the value by 1 if doing so doesn’t exceed the max limit, using the atomic\_inc\_below(..)  macro. 
+We thus manually set the value for it, during task initialisation in lib\_task\_start(...).  
+
+\begin{lstlisting}[style=CStyle] 
+ucounts->ns->ucount_max[UCOUNT_MNT_NAMESPACES] = MNS_MAX;
+\end{lstlisting}
+
+But, we did set up the mount namespace, for the init task, but what for the other tasks ? We thus create a global variable def\_mnt\_ns and 
+store a backup of the first mount namespace using an extern variable and then later on set it up in the lib\_task\_start(...) 
+\begin{lstlisting}[style=CStyle] 
+struct nsproxy *ns;   
+ns->uts_ns = 0;
+ns->ipc_ns = 0;
+ns->mnt_ns = def_mnt_ns;
+ns->pid_ns_for_children = 0;
+ns->net_ns = &init_net; // global struct * net   
+task->kernel_task.nsproxy = ns;
+\end{lstlisting}
+
+This seems good right ? But what  is def\_root ? Ok, I had to hack this again XD.
+Remember init\_mount\_tree, we discussed it in the pointer above. What does it do ?  It sets up a vfs mount. Okay, does that mean a path somewhere 
+in the kernel ? Yes it should have. I also found another line of code there : 
+init\_task.nsproxy->mnt\_ns = ns;
+
+Okay, does this mean that the first task has the mount namespace generated while we mount and allocate the mount tree and acquire an mnt\_namespace. 
+What else can we observe here ? How does the Linux Kernel create tasks then ? Do you remember doing these when you create processes on your OS ? 
+No, right ? Which means, do we reuse some of the previous data from the init\_task and replicate them in new tasks. Yes, we do. Whenever we create 
+a kernel\_thread(..) it calls copy\_process(...) which copies some of the required parameters from the host task, depending upon the flags you pass 
+it. For example, If you had set the CLONE\_FS flag, it would copy the fs\_struct from the init\_task to the newly made task, by calling copy\_fs(..)
+in kernel/fork.c. Which means, if we never have diverse task member requirements we can just reuse the previous task, implying the first task ?  
+Right ! So, we can then just declare a global def\_root and then by declaring an extern variable for it, and keep reusing !
+
+The netif\_napi\_add tests for the NAPI\_STATE\_LISTED bit to be enabled in the state of the napi\_struct passed on to it from cgroup init calls. 
+We never set this flag directly, so this check was removed from the kernel code. sock\_init is one of the many initcalls which are called when 
+sim\_init is invoked by DCE. First of all before we proceed with anything, it is necessary that we have initialised the proc file system completely,
+so that the sysctl interface could be initialised by the net\_sysctl\_init(...). We then register the sockfs filesystem using register\_filesystem(...) 
+and go for a kern\_mount(...) which invokes the VFS kern mount function and as discussed above, it requires the mnt\_init(...) to correctly setup 
+the mount environment. Initially, in net-next-nuse-4.4.0, mnt\_init(...)  was made a blank function, and we have reasons to support it. 
+In older kernel releases, sockfs file system init did not depend on a file system context, and required a mount function (sockfs\_mount) which 
+would directly mount the file system onto the kernel, but in commit [6.1], the socket file system mounting process was handed over to the 
+internal VFS mounting mechanism, thus breaking our setup. So, now we need to have the mnt\_init(...) and put in patches and glue codes wherever 
+needed. ToDo include/arm changes to files, for example, atomic, barrier, ptrace, user, user32/64….
+ToDo Rump kernel header file double include, adding flag to disable linux include
+
+\subsubsection{Native Kernel NetDevices}
+Certain components of ns-3 require to setup custom NetDevices which require a custom mtu and other flags such as should it be a multicast device, 
+or a P2P device, or should it broadcast etc. These flags could be put togethers and we can allocate a netdevice for each such requirement using 
+the alloc\_netdev(...), passing all the configurations needed for mtu,address length, and destructors, along with a register\_netdev(...) call.
+This would return back a forward declared struct SimDevice which is (probably)  casted to a NetDevice object inside ns-3. 
 
 
 \begin{itemize}

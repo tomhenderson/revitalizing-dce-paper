@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  6 DEC 2021 20:44
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  6 DEC 2021 21:23
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -354,35 +354,98 @@ Overfull \hbox (4.39662pt too wide) in paragraph at lines 318--328
 \T1/aer/m/n/9 CPU lock con-trolled thread, which makes calls to start_kernel.
  []
 
-
-Underfull \vbox (badness 4279) has occurred while \output is active []
-
- [3]
-Overfull \hbox (1.75334pt too wide) in paragraph at lines 385--392
+[3]
+Overfull \hbox (1.75334pt too wide) in paragraph at lines 390--397
 \T1/aer/m/n/9 Bake works on a build con-fig-u-ra-tion script called bak-conf.xm
 l
  []
 
 
-Overfull \hbox (2.2017pt too wide) in paragraph at lines 395--400
+Overfull \hbox (2.2017pt too wide) in paragraph at lines 400--405
 []\T1/aer/m/n/9 Bake has a source con-fig-u-ra-tion op-tion named patch, which
  []
 
-(./revitalizing-dce.bbl [4]) [5
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family aer in TS1 encoding.
+            Default family used instead on input line 414.
+LaTeX Info: Symbol \textrightarrow not provided by
+            font family aer in TS1 encoding.
+            Default family used instead on input line 414.
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [4]
+Overfull \hbox (26.47449pt too wide) in paragraph at lines 416--420
+\T1/aer/m/n/9 read/write-remove work-flow, it's more ver-sa-tile and would,poss
+ibly,
+ []
+
+
+Overfull \hbox (1.96513pt too wide) in paragraph at lines 435--444
+\T1/aer/m/n/9 threads called fibers, which re-quire a cus-tom sched-uler, calle
+d
+ []
+
+
+Overfull \hbox (5.14421pt too wide) in paragraph at lines 435--444
+\T1/aer/m/n/9 you run any ap-pli-ca-tion, and then you spin up nor-mal threads,
+
+ []
+
+
+Overfull \hbox (4.92819pt too wide) in paragraph at lines 461--471
+\T1/aer/m/n/9 call-ing the cor-re-spond-ing copy util-ity, for ex-am-ple copy_f
+s(...),
+ []
+
+
+Overfull \hbox (42.46472pt too wide) in paragraph at lines 461--471
+\T1/aer/m/n/9 copy_files(...), copy_cred(...), It also makes a call to dup_task
+_struct(...),
+ []
+
+
+Overfull \hbox (5.49706pt too wide) in paragraph at lines 461--471
+\T1/aer/m/n/9 one and re-turn it back. Af-ter we get back a proper task_struct,
+
+ []
+
+[5]
+Overfull \hbox (9.83464pt too wide) in paragraph at lines 479--484
+\T1/aer/m/n/9 rewrite the ker-nel_thread(...) func-tion to call lib_task_start(
+...),
+ []
+
+
+Overfull \hbox (25.68355pt too wide) in paragraph at lines 526--542
+\T1/aer/m/n/9 radix_tree_init time-keep-ing_init cred_init uts_ns_init vfs_cach
+es_init
+ []
+
+
+Overfull \hbox (3.4898pt too wide) in paragraph at lines 564--565
+\T1/aer/m/n/9 files_struct for each new task in it's cor-re-spond-ing task_stru
+ct.
+ []
+
+[6]
+
+LaTeX Font Warning: Font shape `TS1/aer/m/it' undefined
+(Font)              using `TS1/aer/m/n' instead
+(Font)              for symbol `textasteriskcentered' on input line 615.
+
+[7] (./revitalizing-dce.bbl) [8
 
 ] (./revitalizing-dce.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
  ) 
 Here is how much of TeX's memory you used:
- 5281 strings out of 483183
- 66112 string characters out of 5966292
- 541349 words of memory out of 5000000
- 20208 multiletter control sequences out of 15000+600000
+ 5402 strings out of 483183
+ 67756 string characters out of 5966292
+ 559381 words of memory out of 5000000
+ 20329 multiletter control sequences out of 15000+600000
  587722 words of font info for 91 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  46i,11n,60p,475b,1652s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -390,20 +453,21 @@ Here is how much of TeX's memory you used:
 pk>{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texli
 ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmb10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/ty
-pe1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/publ
-ic/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmti7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
-/cmti9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.
-pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/sh
-are/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texlive/
-texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/font
-s/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/tim
-es/utmri8a.pfb>
-Output written on revitalizing-dce.pdf (5 pages, 174198 bytes).
+fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmti7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/tex
+live/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-d
+ist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1
+/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr
+i8a.pfb>
+Output written on revitalizing-dce.pdf (8 pages, 217142 bytes).
 PDF statistics:
- 78 PDF objects out of 1000 (max. 8388607)
- 56 compressed objects within 1 object stream
+ 94 PDF objects out of 1000 (max. 8388607)
+ 67 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
