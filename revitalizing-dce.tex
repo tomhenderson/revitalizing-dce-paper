@@ -315,7 +315,26 @@ and kernel boot process.
 
 
 \paragraph{In-Library Kernel Boot Order}
-sdsd
+Apart from certain functionalities which are initialized only in a user OS such as HW drivers and devices,
+such as network buses, NICs, etc. LKL spins up an LKL high level CPU lock controlled thread, which makes calls to 
+start\_kernel. LKL being an uniprocessor system, initializes kernel on a singular LKL thread, locks of 
+which are synced with Linux scheduler calls, which are called when the scheduler decides to switch execution control 
+to kernel level tasks for preemption, and other tasks, which require certain memory level moderation to achieve
+atomic operation. Also, since the LKL CPU thread needs to be initialized before any linux  functionalities can be use by the 
+application thats using the LKL library, it eventually disrupts the flow of DCE scripts, which works on a 
+scheduling algorithm, which works on specific ns-3 task context switch paradigms, different from the Linux kernel,
+making it wait for LKL's internal Linux kernel opertions to finish, before it can schedule other ns-3 Light weight
+threads, making simulation results differ a lot from real world observations.
+
+LibOS, does not depend on the actual start\_kernel, particularly because as opposed to LKL which sets up an environment 
+for the Linux kernel all the basic requirements for the kernel to assume an actual linux workspace making it easy 
+for LKL to access most of Linux functionalities without any change to kernel internals, LibOS on the other hand makes 
+use of it's own lib\_init fuction which calls specific setups calls required by the network stack of the kernel to 
+work, such as proc, VFS, ramfs, scheduler, etc. It also overrrides scheduler member functions, syncing it with ns-3 
+scheduler's. LibOS creates an ns-3 task copy for each kernel task which is created by the copy\_process, create\_process,
+etc. kernel functions. Each such task maps with itself a callback function which should be called once the wait time
+for a task is over, or has been invoked as a part of a regular scheduling process. Once tasks are processed, it is
+also popped off the ns-3 task queue.
 \paragraph{Compatibility}
 sdsd
 \paragraph{Maintenance}
