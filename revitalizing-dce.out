@@ -1,0 +1,30 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Challenges}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{libio vtable mangling}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{PIE loading and usage}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Linux Networking Stack for DCE}{section.2}% 5
+\BOOKMARK [3][-]{subsubsection.2.3.1}{LKL}{subsection.2.3}% 6
+\BOOKMARK [3][-]{subsubsection.2.3.2}{LibOS}{subsection.2.3}% 7
+\BOOKMARK [3][-]{subsubsection.2.3.3}{LKL vs. LibOS}{subsection.2.3}% 8
+\BOOKMARK [1][-]{section.3}{Solutions}{}% 9
+\BOOKMARK [2][-]{subsection.3.1}{Custom glibc-2.31 Based Build}{section.3}% 10
+\BOOKMARK [2][-]{subsection.3.2}{Bake Build Automation}{section.3}% 11
+\BOOKMARK [2][-]{subsection.3.3}{Docker environenment for DCE}{section.3}% 12
+\BOOKMARK [2][-]{subsection.3.4}{net-next-nuse-5.10}{section.3}% 13
+\BOOKMARK [3][-]{subsubsection.3.4.1}{Background}{subsection.3.4}% 14
+\BOOKMARK [3][-]{subsubsection.3.4.2}{Slib Allocator}{subsection.3.4}% 15
+\BOOKMARK [3][-]{subsubsection.3.4.3}{Virtual Kernel Task and its Real Fiber Equivalent}{subsection.3.4}% 16
+\BOOKMARK [3][-]{subsubsection.3.4.4}{Scheduler Workqueue/Waitqueue Implementation}{subsection.3.4}% 17
+\BOOKMARK [3][-]{subsubsection.3.4.5}{Jiffies Timer}{subsection.3.4}% 18
+\BOOKMARK [3][-]{subsubsection.3.4.6}{Kernel Initialisation}{subsection.3.4}% 19
+\BOOKMARK [3][-]{subsubsection.3.4.7}{Security LSM Module}{subsection.3.4}% 20
+\BOOKMARK [3][-]{subsubsection.3.4.8}{Kernel Code - net-next-nuse Alignment}{subsection.3.4}% 21
+\BOOKMARK [3][-]{subsubsection.3.4.9}{Native Kernel NetDevices}{subsection.3.4}% 22
+\BOOKMARK [1][-]{section.4}{Results}{}% 23
+\BOOKMARK [2][-]{subsection.4.1}{Docker vs Native DCE Simulation Tests}{section.4}% 24
+\BOOKMARK [2][-]{subsection.4.2}{Performance : DCE vs. ns-3}{section.4}% 25
+\BOOKMARK [2][-]{subsection.4.3}{Google BBR v1 Validation Results}{section.4}% 26
+\BOOKMARK [1][-]{section.5}{Related Work}{}% 27
+\BOOKMARK [1][-]{section.6}{Conclusions}{}% 28
+\BOOKMARK [1][-]{section.7}{Acknowledgments}{}% 29
+\BOOKMARK [1][-]{section.8}{References}{}% 30
