@@ -268,282 +268,298 @@ where FILE * objects are passed to threads which are not in the currently linked
 overwrites the \textit{\_IO\_jump\_t}, it does not lie in \textit{libio\_IO\_vtables} section and it also does not pass the pointer mangling sanity checks, leading to a \textit{\_\_libc\_fatal (\"Fatal error: glibc detected an invalid stdio handle\");}
 
 \subsection{PIE loading and usage}
-PIE or position-independent-executables are applications compiled with special compiler flags, which allow the application to be loaded into random 
-memory address, not depending on absolute symbol addresses, avoiding exploits which hijack the call stack by referencing constant function/symbol addresses.
-In the case of a PIE, every memory address is accessed with refference to what is called the \textit{\%rip}. The \textit{\%rip} is computed at the time 
-of execution when the application is loaded into virtual memory. This makes it difficult for attackers to determine symbol location in memory.
+Position-independent-executables (PIE) are applications compiled with special compiler flags that allow the application to be loaded into an arbitrary
+memory address, not depending on absolute symbol addresses.  PIE executables
+avoid exploits that hijack the call stack by referencing fixed function/symbol addresses that can be found in executables not compiled in this manner.
+Every memory address is accessed with reference to what is called the \textit{\%rip} (instruction pointer). The \textit{\%rip} is computed at the time 
+of execution when the application is loaded into virtual memory. This approach makes it difficult for attackers to determine symbol locations in memory.
 
-In DCE, we support the execution of real host application in simulation, bridging the networking layer between the host and the specified networking stack,
-and also other system calls made by the host applications. Since, we might have to load several applications into memory, and alsp have control over the
-position of the \text{main} symbol of the loaded application, we need to have position independent executables, so that when they are loaded into memory,
-the symbol positions in memory are dynamic, giving us control over when an application is launched in a simulation which can be configured in the script 
-using available ns-3 programming constructs for the \textit{DceApplicationManager} class. To implement this, DCE used the \textit{CoojaLoader} which 
-uses dlmopen udner the hood to load the executable into memory. In glibc version newer than 2.25, security checks have been introduced to identify such 
-PIE objects being loaded through dlmopen, and in case it finds the \textbf{DF\_1\_PIE} flag in it's ELF Dynamic headers, if would abort with an error.
-
+DCE supports the execution of real host applications in simulation, bridging the networking layer between the host and the specified networking stack,
+and also supporting other system calls made by the host applications. Since several applications may need to be loaded into memory, and also have control over the
+position of the \text{main} symbol of the loaded application, DCE needs to have position independent executables, so that when they are loaded into memory,
+the symbol positions in memory are dynamic, giving control over when an application is launched in a simulation (which can be configured in the script 
+using available ns-3 programming constructs for the \textit{DceApplicationManager} class). To implement this, DCE uses the \textit{CoojaLoader} which 
+uses \textit{dlmopen} under the hood to load the executable into memory. In glibc library versions newer than 2.25, security checks have been introduced to identify such 
+PIE objects being loaded through \textit{dlmopen}, and in case the \textbf{DF\_1\_PIE} flag is found in the object's ELF Dynamic headers, it will abort with an error.
+ 
 
 \subsection{Linux Networking Stack for DCE}
-DCE is by nature of ns-3 designed for writing network simulations and achieve real world like results. It makes is necessary for it to provide script 
-writers with freedom to choose which networking stack they would want to make use of for their simulation script. We currently support the following 
-networking stacks : Linux, ns-3 and FreeeBSD. Script writers can configure the \textit{DceManager} class by setting the network stack to what they preffer.
-Currenly, the Linux network stack is based on net-next-nuse-4.4.0, which is built on top of base Linux kernel version 4.4.0. net-next-nuse is a library 
-port of the Linux kernel, which does selective linking of requried kernel modules and components such as the networking, VFS, MMU, etc. layers, patching 
-the holes with glue code, exporting DCE useful callback structures, abstracting the internal network data flow, also syncing Linux kernel synchronization, 
-process creating, and DCE-kernel task, IRQ and tasklet scheduling and synchronization, to expose a Linux like execution bed for host applications. 
+DCE also provides implementation options for ns-3 simulations for the networking stack at the TCP/IP layers.  Linux and FreeBSD stacks are available as alternatives to the native ns-3 TCP/IP implementation.
+Script writers can configure the \textit{DceManager} class to use the chosen stack.
+Currenly, the Linux network stack is based on a project named \textit{net-next-nuse-4.4.0}, which is built on top of base Linux kernel version 4.4.0.
 
-Since Linux kernel 4.4.0, the later Linux kernel releases have had major developements in almost all kernel compoenents, but for our specific use case
-the networing stack has seen major changes in several components such as the TCP Timer, Jiffies and clock HZ usage, napi working and internal enums 
-and state definitions and checks, Packet flow, checksum and offloading hardennings, newer congestion control algorithms, ucounts API, etc. 
-The current Linux kernel networking stack does suffice for now, but hasn't kept pace with the current research needs. 
+The process for supporting portions of the Linux or FreeBSD kernel in DCE is
+much more extensive than that for a typical user-space application, because of
+the size of the kernel and because the kernel provides its own scheduler and has internal implementations of functions such as memory management.  It is not
+simply a matter of compiling kernel code as PIE library code; more intrusive
+changes are necessary. 
+\textit{net-next-nuse} is a library 
+port of the Linux kernel that performs selective linking of required kernel modules and components such as the networking, virtual file system (VFS), memory management unit (MMU), and other layers.  The library port also performs additional functions such as
+exporting DCE useful callback structures, abstracting the internal network data flow, coordinating Linux kernel synchronization, 
+process creating, and DCE-kernel task, IRQ and tasklet scheduling and synchronization, to expose a Linux-like execution environment for host applications. 
+
+Since Linux kernel 4.4.0, Linux kernel releases have had major developements in almost all kernel components, but for our specific use case,
+the networking stack has seen major changes in several components, including the TCP timer, jiffies and clock HZ usage, packet processing (napi) framework, internal enums and state definitions and checks, packet flows, checksum and
+offload hardenings, newer congestion control algorithms, ucounts API, etc. 
+The Linux kernel version 4.4 networking stack is useful for some ns-3 simulation work but lacks implementations found in more recent kernels that are of interest to current researchers.  Therefore, to upgrade the supported kernel version to something more current, we considered both an evolution of the existing approach, as well as an evaluation of two similar projects, LKL and LibOS, described next. 
 
 \subsubsection{LKL}
-LKL also known as Linux Kernel Library, is a library port of the Linux kernel which through some pre-shipped helper shell scripts can be used to hijack
-all system calls made by the host application and map it through the ported Linux kernel rather than system defined implementations. It also allows one 
-to setup network interfaces such as TAP, RAW, VDE , etc. with custom gateways, masks, IPs, etc. with the help of json configuration files. These helper
-shell scripts make use of LD\_PRELOAD to reorder library loading to LKL written system calls to take control in place of the libc defined routines.
-
+The Linux Kernel Library (LKL) is a library port of the Linux kernel that, through some pre-shipped helper shell scripts, can be used to hijack
+all system calls made by a host application and map them through the ported Linux kernel rather than through system defined implementations. It also allows one 
+to setup network interfaces such as TAP, RAW, VDE , etc. with custom gateways, netmasks, IP addresses, etc. with the help of JSON configuration files. These helper
+shell scripts make use of \texttt{LD\_PRELOAD} to reorder library loading to LKL written system calls to take control in place of the libc defined routines.
+ 
 \subsubsection{LibOS}
-LibOS can also be reffered to what internal architecture net-next-nuse uses under the hood. It is also a Lixnu kernel port which works on selective 
-kernel module linking and patching on the go working princinple. It defines special link time constructs to include only specific kernel files and 
-symbols which are needed for executing on top of the Linux kernel with \textit{nuse}, which works similar to LKL in terms of hijacking system calls 
-and rerouting them through nuse and kernel defined routines. It only links kernel components which lets LibOS start the kernel and run all \textit{\_\_initcall}(s)
-which are defined with a \textit{\_\_init} and registered as as a initcall using special macros. Thes routines are linked into special \textit{.INIT} 
+LibOS uses the same internal architecture as does \textit{net-next-nuse}.
+It is also a Linux kernel port that works on the principle of selective 
+kernel module linking and patching. It defines special link time constructs
+to include only specific kernel files and 
+symbols that are needed for executing on top of the Linux kernel with \textit{nuse}, which works similar to LKL by hijacking system calls 
+and rerouting them through nuse and kernel defined routines. Only kernel components that let LibOS start the kernel and run all \textit{\_\_initcall}(s),
+which are defined with a \textit{\_\_init} and registered as as a initcall using special macros, are linked. These routines are linked into special \textit{.INIT} 
 setions of the final linked library. These components include critical parts such \textit{kernel}, \textit{net} and other selective parts of \textit{proc},
 \textit{mm}, \textit{fs} , \textit{drivers}, etc. 
 
 \subsubsection{LKL vs. LibOS}
-Below is a parameter wise comparison of LKL and LibOS on the various design decisions which become critical for a complex application framework like 
+We conducted a comparison of LKL and LibOS approaches according to different design parameters and considerations for a complex application framework such as
 DCE with very specific demands from it's underying network stack.
 
 \paragraph{Linux Kernel Support}
-LKL, which was primarily designed to work as Linux-as-Library interface for application to be dynamically linked to at runtime, is built on top of 
-Linux 5.2. The kernel port design of LKL, favours kernel version upgradation with little to no efforts. Abstractly, the kernel upgradation process 
-would include a git rebase on the kernel version we would want to use, and project should compile with no major issues to deal with (some minor compiler, 
-and Linux kernel header definition changes might come up, which should be resolvable with a bit of effors).
+LKL, which was primarily designed to work as a Linux-as-userspace-library interface for applications to be dynamically linked to at runtime, is built on top of 
+Linux 5.2. The kernel port design of LKL facilitates kernel version upgrades with little to no effort. Abstractly, the kernel upgrade process 
+would permit a git rebase on the kernel version the user would want to use, and the project should compile with no major issues to deal with (some minor compiler, 
+and Linux kernel header definition changes might come up, which should be resolvable with a bit of effort).
 
-LibOS, which makes use of dynamic selective Linux kernel linking, bridges the gap between application workspace and Linux kernel networking stack with
+LibOS, which makes use of dynamic, selective Linux kernel linking, bridges the gap between application workspace and Linux kernel networking stack with
 the help of glue code, kernel component connector code, and user application provided exported functions and callbacks for proper execution. This
-architecture required LibOS to modify some of the internal Linux kernel files for additional compoenets such as the slab allocator, which requires 
-LibOS to setup preprocessor directives to select out SLAB allocator for specific Kconfig defined compiler directive, to pass on control to LibOS routines 
-whenever required. Currenly LibOS supports Linux kernel 4.4.0. Upgrading to a newer Linux kernel version might be an intense process requiring one 
+architecture required LibOS to modify some of the internal Linux kernel files for additional components such as the slab memory allocator, which requires 
+LibOS to setup preprocessor directives to select a slab allocator for specific Kconfig-defined compiler directives, to pass on control to LibOS routines 
+whenever required. Currently, LibOS supports Linux kernel version 4.4.0. Upgrading to a newer Linux kernel version might be an intense process requiring one 
 to deal with issues from header file changes, to complete changes in kernel components like the networking layer, memory maqnagement, namespace manager 
 and kernel boot process.
 
 
 \paragraph{In-Library Kernel Boot Order}
-Apart from certain functionalities which are initialized only in a user OS such as HW drivers and devices,
-such as network buses, NICs, etc. LKL spins up an LKL high level CPU lock controlled thread, which makes calls to 
-start\_kernel. LKL being an uniprocessor system, initializes kernel on a singular LKL thread, locks of 
-which are synced with Linux scheduler calls, which are called when the scheduler decides to switch execution control 
+Apart from certain functions that are initialized only in a user OS, such as hardware drivers and devices, network buses, NICs, etc., LKL spins up a high level CPU lock controlled thread, which makes calls to 
+\texttt{start\_kernel}. Since LKL is a uniprocessor system, it initializes the kernel on a singular LKL thread, locks of 
+which are synchronized with Linux scheduler calls, which are called when the scheduler decides to switch execution control 
 to kernel level tasks for preemption, and other tasks, which require certain memory level moderation to achieve
-atomic operation. Also, since the LKL CPU thread needs to be initialized before any linux  functionalities can be use by the 
-application thats using the LKL library, it eventually disrupts the flow of DCE scripts, which works on a 
-scheduling algorithm, which works on specific ns-3 task context switch paradigms, different from the Linux kernel,
-making it wait for LKL's internal Linux kernel opertions to finish, before it can schedule other ns-3 Light weight
-threads, making simulation results differ a lot from real world observations.
+atomic operation. Also, since the LKL CPU thread needs to be initialized before any Linux functions can be used by the 
+application that is using the LKL library, it eventually disrupts the flow of DCE scripts, which work on a 
+scheduling algorithm and specific ns-3 task context switch paradigms that are different from the Linux kernel,
+making it wait for LKL's internal Linux kernel opertions to finish, before it can schedule other ns-3 lightweight
+threads.  The net result of this tension is to cause simulation result to differ from real world observations.
 
-LibOS, does not depend on the actual start\_kernel, particularly because as opposed to LKL which sets up an environment 
-for the Linux kernel all the basic requirements for the kernel to assume an actual linux workspace making it easy 
+LibOS does not depend on the actual \texttt{start\_kernel}, particularly because, as opposed to LKL which sets up an environment 
+for the Linux kernel, all of the basic requirements for the kernel to assume an actual Linux workspace making it easy 
 for LKL to access most of Linux functionalities without any change to kernel internals, LibOS on the other hand makes 
-use of it's own lib\_init fuction which calls specific setups calls required by the network stack of the kernel to 
-work, such as proc, VFS, ramfs, scheduler, etc. It also overrrides scheduler member functions, syncing it with ns-3 
-scheduler's. LibOS creates an ns-3 task copy for each kernel task which is created by the copy\_process, create\_process,
+use of its own \texttt{lib\_init} fuction which calls specific setups calls required by the network stack of the kernel to 
+work, such as proc, VFS, ramfs, scheduler, etc. It also overrides scheduler member functions, syncing it with ns-3's 
+scheduler. LibOS creates an ns-3 task copy for each kernel task which is created by the \texttt{copy\_process}, \texttt{create\_process},
 etc. kernel functions. Each such task maps with itself a callback function which should be called once the wait time
-for a task is over, or has been invoked as a part of a regular scheduling process. Once tasks are processed, it is
+for a task is over, or has been invoked as a part of a regular scheduling process. Once tasks are processed, they are 
 also popped off the ns-3 task queue.
 \paragraph{Maintenance}
-LKL, was designed to be a low maintenace Linux-As-A-Library interface, which exposes Linux subsystems through overided UNIX system calls. 
-Since, LKL is an architecture level port of the Linux kernel, isolating LKL specific code to the arch and tools Linux folders, moving on to 
-newer or custom releases induces less cost as compared to LibOS, which works on dynamic component compiling \& linking build system through a
-custom Makefile, where are Linux files and modules to be compiled and linked to the final nuse shared object file, should be explicitly mentioned,
-and this listing should be exhaustive, assuring no function calls are being made by any critical component to another component which does not 
-exist, and if it does, we need to fullfill the depedency graph for all such modules and file. This makes migrating to newer versions of Linux kernel,
-or for that matter, simply debugging kernel internals, requires more effort as one is not sure if it's the glue code that's malfunctioning, or is it
-the allocator or the ns-3 synced scheduler causing trouble.
+LKL was designed to be a low-maintenance, Linux-as-a-userspace-library interface, which exposes Linux subsystems through overidden system calls. 
+Since LKL is an architecture-level port of the Linux kernel, isolating LKL specific code to the arch and tools Linux folders, moving on to 
+newer or custom releases induces less cost as compared to LibOS, which works on dynamic component compiling and linking the build system through a
+custom Makefile, specifying Linux files and modules to be compiled and linked to the final nuse shared object file, and the selection of files to compile must be complete, assuring that no function calls are being made by any critical component to another component that does not 
+exist, and as necessary, writing glue code to fulfill the depedency graph for all such modules and files. This makes migrating to newer versions of Linux kernel more time consuming, and 
+even simply debugging kernel internals requires more effort since one is not sure if it is the glue code,
+the allocator, or the ns-3 synced scheduler that is malfunctioning.
 
 \section{Solutions}
 \label{section:design}
 
-\subsection{Custom glibc-2.31 Based Build}
-On a Linux environements, multiple library systems could be selected to be linked to. A few options are libc are musl. The post-linking structure
-of the generated binary and the libary vary, in terms of the number of static linkages, symbol table, etc. For instance, musl works on the idea of
+\subsection{Custom glibc-2.31-based build}
+Given that the standard glibc library, since version 2.25, contains security features that block how DCE makes use of it, the alternatives are to either use a different standard library implementation without such features, or to use a modified version of glibc.  Two options are \textit{libc} and \textit{musl}.
+The post-linking structure
+of the generated binary and the libary vary, in terms of the number of static linkages, symbol tables, etc. For instance, musl works on the idea of
 single static linkage, in which, the library or executable compiled with musl-gcc, is statically linked to only one musl linked library called 
-ld-musl.so.1, which defines all the symbols required by the application. This reduces the size of the executable to a huge extent, but 
-also does more harm than good to DCE. The initial build step of DCE includes calling a script named dcemakeversion.c. This script is responsible 
-for extracting the symbol table of the libc currently being linked to. All symbols for the libraries libc, libpthread, librt, lib and libdl. These 
+\texttt{ld-musl.so.1}, which defines all the symbols required by the application. This reduces the size of the executable by a huge extent, but 
+also does more harm than good to DCE. The initial build step of DCE includes calling a script named \texttt{dcemakeversion.c}. This script is responsible 
+for extracting the symbol table of the libc currently being linked to (all symbols for the libraries libc, libpthread, librt, lib and libdl). These 
 libraries are the various modular extensions of the glibc providing features such as pthreads, math, dynamic library loading and the base libc 
-library as well. The symbols are read from the Elf Headers of the respective shared library .so file, and stored in a local .version .
-
-The symbol table for all these libraries are important for us, as DCE as a build outout generates what is called the libc-ns3.so. This is a shared 
-library which is a wrapper for the local libc and DCE implementations, on top of which host applications are executed. This shared library defines 
-all symbols which are defined in the local libc, as NATIVE and all the features implemented inside DCE as DCE. All other symbols which are new to 
-DCE and not implemented by us, but is a part of the local system libc, is then refferenced in the .version files. These symbols are then defined 
-as well, to avoid any runtime symbol lookup errors. It then generates preprocessor mappings for all the symbols. All DCE defined symbols will 
-natively be mapped to DCE implemented versions of them, rather than the systel libc implementation, and all NATIVE defined symbols will be mapped 
+library as well. The symbols are read from the Elf headers of the respective shared library .so file, and stored in a local .version file.
+ 
+The symbol table for all of these libraries are important, as DCE generates a shared library called \texttt{libc-ns3.so} which is a 
+for the local libc and DCE implementations, on top of which host applications are executed. This shared library defines 
+all symbols which are defined in the local libc, as \texttt{NATIVE} and all the features implemented inside DCE as \texttt{DCE}. All other symbols that are new to DCE but not implemented by DCE, but that are a part of the local system libc, are then referenced in the .version files.  These symbols are then defined 
+as well, to avoid any runtime symbol lookup errors. DCE then generates preprocessor mappings for all of the symbols. All DCE defined symbols will 
+natively be mapped to DCE implemented versions of them, rather than to the system libc implementation, and all NATIVE defined symbols will be mapped 
 to global namespace implementations, which are the ones already implemented in the system libc. Users would compile their applications on top of 
-the system libc itself, but with an extra -fPIC and -pie flag, which allows us to load the applications dynamically into out process address 
-space. We then load out libc-ns3.so shared object file, and call out libc\_setup function which initialiazes the system call mappings. We also 
-subsequently load other libraries which we have generated in a similar way, i.e, libpthread-ns3.so , librt-ns3.so , libm-ns3.so and libdl-ns3.so .
-We then finally load the host application, lookup and call the main function of the application, which starts to now work on top of our custom 
-libraries. musl-gcc on the other hand does not support modular libraries for these features, and for all cases would link the single ld-musl.so.1, making it 
-impossible for use to seggregate the symbols for all our different libraries. glibc, on the other hand, works exactly how we would want the standard 
-library to, and links all the standard libraries we require.
+the system libc itself, but with an extra -fPIC and -pie flag, which allows us to load the applications dynamically into the DCE process address 
+space. The next step is to load out the libc-ns3.so shared object file, and to call the \texttt{libc\_setup} function, which initializes the system call mappings. DCE also 
+subsequently loads other libraries that have been generated in a similar way, such as \texttt{libpthread-ns3.so}, \texttt{librt-ns3.so}, \texttt{libm-ns3.so}, and \texttt{libdl-ns3.so}.
+As a final step, the host application is loaded and the main function of the application is called, which starts to now work on top of the custom libraries.
+\texttt{musl-gcc}, on the other hand, does not support modular libraries for these features, and for all cases would link the single \texttt{ld-musl.so.1}, making it 
+impossible to segregate the symbols for the different libraries. glibc is a better match for what DCE requires, and links all the standard libraries needed.
 
-In an attempt to override the vtable mangling security checks, it was necessary to use a libc version that matches the system default libc version 
-so that we dont see any symbol lookup errors at runtime because of application built on later libc release and beig loaded into an available namespace
-using dlmopen. But, we also had to override the security checks on vtable pointer mangling. The gcc compiler and linker options could be used to 
-reconfigure the default build environment to build DCE on top of a custom built patched glibc. The default root directory where gcc starts to look for
-libraries, header files, etc. is  '/' on Linux. We need to re-point this directory to out customg glibc root. This is where the --sysroot option 
-is used to set it to correct bake build directory. We then add the custom glibc prioritized directory for library and header file lookup using the 
--L and -I option respectively. We then set the rpath and rpath-link paths for ELF executables that could be linked to the shared objects at run time 
-or link time respectively. We then set the dynamic linker to one we have build currently, using the -Wl--dynamic-linker flag. Also, all these changes
-are placed under an unclosed -Wl --start-group, as DCE requires other linker flags, which when added we insert the ending -Wl --end-group.
-
+To override the vtable mangling security checks of glibc, it is necessary to use a modified libc version that matches the system's default libc version,
+so that symbol lookup errors are avoided at runtime by applications built on a different library and being loaded into an available namespace using \texttt{dlmopen}.
+It is also necessary to override the security checks on vtable pointer mangling. The gcc compiler and linker options could be used to 
+reconfigure the default build environment to build DCE on top of a customized
+glibcc. The default root directory where gcc starts to look for
+libraries, header files, etc. is  \texttt{'/'} on Linux.  It is necessary to repoint this directory to the custom glibc root. This is where the \texttt{--sysroot} option 
+is used to set it to correct bake build directory. Following this, one can then add the custom glibc prioritized directory for library and header file lookup using the 
+-L and -I options, respectively. Next, the rpath and rpath-link paths for ELF executables that could be linked to the shared objects at run time 
+or link time, respectively, are set. Finally,the dynamic linker is set to the newly built library, using the -Wl--dynamic-linker flag.  All these changes
+are placed under an unclosed -Wl --start-group, as DCE requires other linker flags, which can be added before inserting the ending -Wl --end-group.
+ 
 
 
 \subsection{Bake Build Automation}
 
-Bake works on a build configuration script called bakconf.xml . The bakeconf.xml file is converted to bakefile.xml after the configuration file is 
-parsed by the Bake module. Based on the bakeconf.xml file creates a build Dependency graph, maintaining build steps, parameters and post build 
-commmands for each Dependency node. Bake dynamimcallly binds Dependency modules based on configuration options specified for each build module 
-defined in the bakeconf.xml. The three mahor steps of a Bake build are, configure, download and build. Bake supports almost all major types of 
-source code fetching methods, ranging from git, mercurial to standard publicly available zipped archive files. In the build step, dependencies 
-are built in the order with modules having no dependencies on other modules, to the module having all dependencies already satisfied. To support 
-the custom glibc build, the dependency graph looked something like this : 
+Bake is a Python-based build system invented for DCE.  It orchestrates the build and local installation of several DCE dependencies before managing the DCE build itself, by calling other build tools native to the respective projects, such as make, Waf, or CMake.  Bake works on a build configuration script called \texttt{bakeconf.xml}. The bakeconf.xml file is converted to \texttt{bakefile.xml} after the configuration file is 
+parsed by the Bake module. This creates a build dependency graph, maintaining build steps, parameters and post build 
+commmands for each dependency node. Bake dynamimcallly binds dependency modules based on configuration options specified for each build module 
+defined in the bakeconf.xml. The three major steps of a Bake build are:
+1) configure, 2) download and 3) build. Bake supports almost all major types of 
+source code fetching methods, including git, mercurial and the fetching of compressed archive files. In the build step, dependencies 
+are built in the required order, starting with modules having no dependencies on other modules, and finishing with the module having all dependencies already satisfied. To support 
+the custom glibc build, the dependency graph looked something like this: 
 
 ToDo : Attach Bake Dependency graph ? 
 
-Bake has a source configuration option named patch, which can safely aplly a patch, without re-applying if it has already been applied before.
-Using this option, the custom DCE specfic libc patch is applied, which disables the security checks on vtable mangling, and also disables the 
-pie object checks for dlmopen position independent executable loading. The glibc is then build using standrd build steps. The linux kernel headers
-files are then installed into /usr directory of a custom glibc's sysroot. This leaves with a standard Linux like system root to use for building 
+Bake has a source configuration option named \textit{patch}, which can safely apply a patch, without re-applying if it has already been applied before.  This allows, for example, a large codebase to be fetched in its unaltered form, while Bake must maintain and apply only a small patch file to it.
+Using this option, Bake applies the DCE-specific glibc patch, which disables the security checks on vtable mangling, and also disables the 
+PIE object checks for dlmopen position independent executable loading. The glibc is then build using its standard build steps. The linux kernel headers
+files are then installed into the \texttt{/usr} directory of a custom glibc's sysroot. This finishes with a standard Linux-like system root to use for building 
 DCE without any issues. 
 
 
-\subsection{Docker environenment for DCE}
+\subsection{Docker environnment for DCE}
 
 \subsection{net-next-nuse-5.10}
-Net-Next-Nuse is an architecture port of the Linux Kernel, which resorts to selective kernel module linking and takes control over critical kernel 
+Net-next-nuse, introduced above, is an architecture port of the Linux kernel, which resorts to selective kernel module linking and which takes control over critical kernel 
 components such as the slab allocator, task scheduler, workqueue-waitqueue handling, timer based function invocation, as well as some kernel 
 utilities such as jiffies and random number generators. It also sets up emulations of the network system calls for both general socket networking 
-operations as well netdevice based operations. All of this is exposed through an API initialised by a simulator initialisation call, sim\_init, 
-which does a bidirectional mapping of the imported(DCE → Linux) and exported(Linux → DCE) function utilities.
+operations as well netdevice based operations. All of this is exposed through an API initialised by a simulator initialisation call, \texttt{sim\_init}, 
+which does a bidirectional mapping of the imported (DCE to Linux) and exported (Linux to DCE) function utilities.
 
 \subsubsection{Background}
-The implementation of net-next-nuse strictly considers only the use case of DCE and thus might not find application outside of DCE unlike LKL which
+The implementation of net-next-nuse considers only the use case of DCE and thus might not find application outside of DCE, unlike LKL which
 is designed for running a plethora of networking applications, but it fits in really well when it comes to DCE. 
 
-When Linux builds, apart from all other files, it generates two important files vmlinuz and initramfs. The file vmlinux is where all the kernel 
-code(/kernel /mm /fs /net /security ...) is compiled and linked. When it comes to LKL, it does a raw objcopy on the generated object 
+When Linux builds, apart from all other files, it generates two important files: \texttt{vmlinuz} and \texttt{initramfs}. The file vmlinuz is where all the kernel 
+code is compiled and linked. LKL performs a raw objcopy on the generated object 
 files vmlinux and copies all symbols from vmlinux along with the global functions exported from the LKL arch port, and combines them into a final 
-library called lkl.o, which is then passed on to the tools/lkl, to link the host, netdevice, utility, filesystem, and networking handler codes to 
-make the final liblkl.so shared library.
+library called \texttt{lkl.o}, which is then passed on to the tools/lkl, to link the host, netdevice, utility, filesystem, and networking handler codes to 
+make the final \texttt{liblkl.so} shared library. In the initial stages of the DCE modernization effort, this approach sounded promising, but as explained below, it can become a bottleneck.
 
-net-next-nuse understands that the way Linux Kernel behaves on the host, and the way the kernel interacts with the task 
-scheduler and how the scheduler operates on the tasks, is completely different from how DCE manages fibers(called task in DCE terminologies). 
-DCE is based on context based light weight threads called fibers, which require a custom scheduler, called TaskManager in DCE. On an ordinary
-host machine when you run any application, and then you spin up normal threads, you would not need to bother about scheduling the threads on 
-the different cores of your cpu and maintaining mutex locks of the cpu, making the kernel responsible for jumping from one thread to another. 
-But when you use fibers, you can jump from one thread to another only when one of the fibers yields to another fiber, and this context switch 
-is done by a custom scheduler, which is written in TaskManager::Schedule(). When you use ordinary threads, the number of context switches the 
-CPU has to do (push your thread data stack on to you address space, in and out), is a lot more expensive than making switches in Fibers.
+In contrast, net-next-nuse understands that the way Linux Kernel behaves on the host, and the way the kernel interacts with the task 
+scheduler and how the scheduler operates on the tasks, is completely different from how DCE manages fibers (called tasks in DCE terminology). 
+DCE is based on context-based, lightweight threads called fibers, which require a custom scheduler, called the TaskManager in DCE. On an ordinary
+host machine, when a user runs any application that spins up normal threads, the user does not need to bother about scheduling the threads on 
+the different cores of the host CPU and maintaining mutex locks of the CPU, making the kernel responsible for jumping from one thread to another. 
+But when using fibers, one can jump from one thread to another only when one of the fibers yields to another fiber, and this context switch 
+is done by a custom scheduler, which is written in DCE's TaskManager::Schedule(). This is beneficial because when using ordinary threads, 
+the number of context switches the CPU has to do (push your thread data stack on to you address space, in and out), 
+is a lot more expensive than making switches in fibers.
 
-We have a scheduler inside DCE, but now when we load a linux kernel library, we also have a scheduler that comes along with it. \
-So, every new operation that you make inside the kernel creates something called a (virtual) kernel thread. But manage those threads is seemingly 
-difficult because the DCE TaskManager cannot see them as it’s virtual. net-next-nuse does a selective linking of 
-kernel modules and utilities and avoids linking of the scheduler, workqueue, waitqueue and other such linked components, and rather implements 
-them using DCE imported functions which maps to TaskManager utilities. So everytime some process wants to preempt and block, the kernel calls 
-schedule() or schedule\_timeout(), and we pass control to DCE to take care of it. 
+Another challenge is as follows.  Separate schedulers exist inside DCE and within the Linux kernel library. 
+As a result, every new operation that you make inside the kernel creates something called a (virtual) kernel thread. 
+However, managing those threads is challenging because the DCE TaskManager does not have visibility to the (virtual) threads.
+The net-next-nuse approach to solving this issue is to perform  a selective linking of 
+kernel modules and utilities and to avoid linking the scheduler, workqueue, waitqueue and other such linked components, opting to instead implement
+them using DCE imported functions mapped to TaskManager utilities. As a result, every time that some process wants to preempt and block, the kernel calls 
+\texttt{schedule()} or \texttt{schedule\_timeout()}, and control is passed to DCE to take care of it. 
 
-\subsubsection{Slib Allocator}
-When the kernel is booted up by net-next-nuse in lib\_init(...), it calls some of the required initialisation functions, and all, included, initcalls. 
-Most of these initcalls require us to create a memory cache object called kmem\_cache. These memory slabs are used to allocate memory to child 
-objects. It uses functions like kmem\_cache\_alloc(...) and functions as simple as kmalloc(...) to allocate space for a pointer object. Now, the 
-kernel already has slab allocators like, SLUB and SLOB, but all of them allocate space internally, giving no control to DCE. We thus use a custom 
-SLAB allocator called SLIB, which calls internal DCE malloc(...) functions and sets up kmem\_cache data structures and ctor’s etc. It also 
-implements compound and single page operations like \_put\_page(...), kfree(...)  and array space allocation. 
+\subsubsection{Slab Allocator}
+When the kernel is booted up by net-next-nuse in \texttt{lib\_init(...)}, it calls some of the required initialization functions, and all included, initcalls. 
+Most of these initcalls require the creation of a memory cache object called \texttt{kmem\_cache}. These memory slabs are used to allocate memory to child 
+objects, using functions like \texttt{kmem\_cache\_alloc(...)} and functions as simple as \texttt{kmalloc(...)} to allocate space for a pointer object. The 
+kernel already has slab allocators (two such allocators are SLUB and SLOB), but all of them allocate space internally, giving no control to DCE. We thus use a custom 
+SLAB allocator called SLIB, which calls internal \texttt{DCE's malloc(...)} functions and sets up \texttt{kmem\_cache} data structures and constructors etc. It also 
+implements compound and single page operations like\texttt{\_put\_page(...)}, \texttt{kfree(...)} and array space allocation. 
 
 \subsubsection{Virtual Kernel Task and its Real Fiber Equivalent}
-Let’s talk a little about how threads are internally managed in the kernel. For every new task inside the kernel, for example, a syscall, 
-creates an internal kernel thread. Now originally when a system boots up, there has to be some initial task that invokes the start\_kernel(...) 
-function. This is called the init\_task. Whenever a new kernel thread is to be created, we make a call to kernel\_thread(...). Along with the 
-function that is to be invoked in the thread, and the arguments to be passed, we also need to pass along one more argument, known as clone flags. 
-Internally, the kernel will try to clone a previous task (or you can say the init\_task), as much as possible. These flags basically determine 
-how far the kernel should go, as in cloning the structures. Some of the flags are CLONE\_FS, CLONE\_VM, CLONE\_FILES, etc. kernel\_clone(...) and 
-passes a special clone flags data structure. This function further calls copy\_process(...). copy\_process(...) is responsible for checking which 
-flags are enabled using a bitwise \& operator and calling the corresponding copy utility, for example copy\_fs(...), copy\_files(...), copy\_cred(...),
-It also makes a call to dup\_task\_struct(...), which will bind changes of the current task\_struct to a new one and return it back. After we get 
-back a proper task\_struct, the kernel\_clone(...) schedules a fork for the newly created tNNask.
+Thread management in the kernel is another important consideration.
+Every new task inside the kernel-- for example, a syscall-- 
+creates an internal kernel thread.  When a system boots up, there has to be some initial task that invokes the \texttt{start\_kernel(...)} 
+function. This is called the \texttt{init\_task}. Whenever a new kernel thread is to be created, a call to \texttt{kernel\_thread(...)} is made. Along with the 
+function that is to be invoked in the thread, and the arguments to be passed, one must also pass along one more argument, known as clone flags. 
+Internally, the kernel will try to clone a previous task as much as possible. These flags basically determine 
+how far the kernel should go, as in cloning the structures. Some of the flags are \texttt{CLONE\_FS}, \texttt{CLONE\_VM}, \texttt{CLONE\_FILES}, etc., and \texttt{kernel\_clone(...)} 
+passes a special clone flags data structure. This function further calls \texttt{copy\_process(...)}, which is responsible for checking which 
+flags are enabled using a bitwise \texttt{\&} operator and calling the corresponding copy utility; for example, \texttt{copy\_fs(...)}, \texttt{copy\_files(...)}, and \texttt{copy\_cred(...)}.
+It also makes a call to \texttt{dup\_task\_struct(...)}, which will bind changes of the current \texttt{task\_struct} to a new one and return it back. After 
+receiving
+back a proper \texttt{task\_struct}, the \texttt{kernel\_clone(...)} schedules a fork for the newly created task.
 
-But the point is, we don’t need most of it ? Why ?  Because it’s irrelevant to us. DCE is not a complete architecture level port and thus lacks a 
-clear definition of init\_task. So, for the very first kernel\_thread the current task would be init\_task, so not having a proper definition of it, 
-creates a domino effect making all subsequent taks having incomplete structure, leading to possible SEGFAULTS. Another reason is, we do not use 
-the kernel scheduler, rather we need to fork a kernel thread in such a way that the DCE scheduler can see it, and every time 
-TaskManager::TaskWait(...)  is called on a particular task, we can put the current job to sleep, and give the other tasks/fibers a chance to 
+However, DCE is not a complete architecture-level port and thus lacks a 
+clear definition of \texttt{init\_task}. So, for the very first \texttt{kernel\_thread}, the current task would be \texttt{init\_task}, so not having a proper definition of it creates a domino effect making all subsequent tasks have an incomplete structure, leading to possible segmentation faults.  Furthermore, DCE does not use 
+the kernel scheduler, but instead forks a kernel thread in such a way that the DCE scheduler can see it, and every time 
+TaskManager::TaskWait(...)  is called on a particular task, DCE can put the current job to sleep, and give the other tasks/fibers a chance to 
 execute their set of functions. 
 
-So, to take  control over the kernel thread creation, we rewrite the kernel\_thread(...) function to call lib\_task\_start(...), which calls the 
+Therefore, to take  control over the kernel thread creation, we rewrite the \texttt{kernel\_thread(...)} function to call \texttt{lib\_task\_start(...)}, which calls the 
 internal TaskManager::Start(...) to create a DCE task, fills up the task\_struct, sets the SimTask context with the task\_struct and returns back 
-the pid of the task. Also current as previously referred to before, is not a variable. It’s a MACRO, which calls get\_current(...) which we hijack 
-and lead to TaskManager::TaskCurrent(...), which checks if the current task has a SimTask context, if it does, it returns it back. 
+the process ID (pid) of the task. Also, \texttt{current}, as previously referred to above, is not a variable, but a macro, which calls \texttt{get\_current(...)}, which DCE hijacks and leads to TaskManager::TaskCurrent(...), which checks if the current task has a SimTask context. If it does, it returns it back. 
 If it does not, it calls TaskManager::Start(...) to set it up.
  
 
 \subsubsection{Scheduler Workqueue/Waitqueue Implementation}
-Most of the scheduling code can be found in the /kernel directory of the Linux Kernel. This is very important to us and so we never compile the 
-original kernel implementation for the scheduler. We rather implement all the key functionalities used by the networking stack. So, 
-question is, if we are not running any applications inside the kernel, why do we even need to schedule anything ? The answer to this is 
-blocking network calls. Imagine you creating a socket, binding and listening to it and then you make an accept(...) call, and the client 
+Most of the scheduling code can be found in the \texttt{/kernel} directory of the Linux kernel. DCe does not compile the 
+original kernel implementation for the scheduler, but rather implements all of the key functions used by the networking stack.  One may ask,
+if no applications are running inside the kernel, when would anything ever need to be scheduled?  The answer is that 
+blocking network calls require such support.  Imagine creating a socket, binding and listening to it and then making an \texttt{accept(...)} call, and the client 
 application doesn’t seem to ever come up. The system would go to a standstill if it did not schedule the client application for it to issue a 
-corresponding connect(...) call. And that’s one of the issues with LKL [4.2]. That is why we avoid linking those files, and rather pass 
+corresponding \texttt{connect(...)} call. This is one of the issues with LKL [4.2], and is why we avoid linking those files, and rather pass the 
 majority of the control to DCE, but without making a single change in code, because DCE also has to work when simulation scripts use the 
-default ns-3 network stack. We thus rewrite certain functions. Below a few function and concepts have been discussed : 
-schedule() : 
-schedule\_timwout() :
-lib\_task\_wait() :
-lib\_task\_yield() : 
-add\_timer() : 
-mod\_timer() :
-init\_timer\_key() :
-do\_softirq() :
-open\_softirq() :
-queue\_work\_on() :
+default ns-3 network stack.  DCE therefore rewrites certain functions. Below, a few function and concepts have been discussed : 
 
-\subsubsection{Jiffies Timer}
-The Linux kernel management of time is based on the use of the global jiffies variable
-which contains a 32bit integer that reports the number of ticks elapsed since the boot of
-the kernel. The duration of each tick depends on the way the kernel was configured but
-nowadays, it is usually configured to be one millisecond. The jiffies variable is normally
+\begin{itemize}
+\item schedule() : 
+\item schedule\_timwout() :
+\item lib\_task\_wait() :
+\item lib\_task\_yield() : 
+\item add\_timer() : 
+\item mod\_timer() :
+\item init\_timer\_key() :
+\item do\_softirq() :
+\item open\_softirq() :
+\item queue\_work\_on() :
+\end{itemize}
+
+\subsubsection{Jiffies timer}
+The Linux kernel management of time is based on the use of the global jiffies variable,
+which contains a 32-bit integer that reports the number of ticks elapsed since the boot of
+the kernel. The duration of each tick depends on the way the kernel was configured, but in modern Linux systems, it is usually configured to be one millisecond. The jiffies variable is normally
 increased whenever the kernel timer interrupt is triggered. This timer interrupt is also
-responsible for executing any expired kernel timers every ten millisecond, etc.
+responsible for executing any expired kernel timers every ten milliseconds, etc.
 [22, 19] both deal with this by executing periodically a per-node event that increases
 the jiffies variable and relies on the Linux kernel code to deal with its internal timers. This
-approach suffers sadly from one major drawback: even if there are no timers scheduled to
+approach suffers from one major drawback: even if there are no timers scheduled to
 expire for the next 10 or 80 milliseconds, the simulation will keep running and executing
 events, just for the sake of incrementally increasing the value of this jiffies variable.
-Rather than waste time to do this, we instead configure the Linux kernel to not use periodic
-ticks with CONFIG NOHZ and then replace entirely the kernel timer facility to schedule
+Rather than waste time to do this, DCE instead configures the Linux kernel to not use periodic
+ticks with \texttt{CONFIG NOHZ} and then replaces the kernel timer facility entirely to schedule
 simulation events for each kernel timer instead of keeping track of the kernel events in a
 data structure separate from the main simulation event list. The resulting kernel network
 stack thus runs in tickless mode and does not waste time scheduling unnecessary events.
 
 
-\subsubsection{Kernel Initialisation}
-The Kernel initialisers are divided into base init functions and roughly 8 levels of initcalls and exports a start and end pointer of the list. 
-Init functions are the ones directly called in the start\_kernel(...) or by certain device drivers, whereas initcalls are the ones which are stored 
+\subsubsection{Kernel initialization}
+The kernel initializers are divided into base init functions and roughly eight levels of initcalls, and export a start and end pointer of the list. 
+Init functions are the ones directly called in the \texttt{start\_kernel(...)} or by certain device drivers, whereas initcalls are the ones which are stored 
 in a special .initcall.init section of the final linked library. These are then copied to their respective positions through the linker.lds script.
-In out lib\_init function I call specific init functions, namely : 
-vfs\_caches\_init\_early
-rcu\_init
-devices\_init 
-buses\_init
-radix\_tree\_init
-timekeeping\_init
-cred\_init
-uts\_ns\_init 
-vfs\_caches\_init 
-seq\_file\_init 
-proc\_root\_init
+In the \texttt{lib\_init} function, I call specific init functions, namely : 
+
+\begin{itemize}
+\item vfs\_caches\_init\_early
+\item rcu\_init
+\item devices\_init 
+\item buses\_init
+\item radix\_tree\_init
+\item timekeeping\_init
+\item cred\_init
+\item uts\_ns\_init 
+\item vfs\_caches\_init 
+\item seq\_file\_init 
+\item proc\_root\_init
+\end{itemize}
+
 I also changed the initcall invocation loop of lib\_init to this : 
 \begin{lstlisting}[style=CStyle] 
    initcall_entry_t *call;
@@ -555,8 +571,11 @@ I also changed the initcall invocation loop of lib\_init to this :
        call++;
    } while (call < __initcall_end);
 
-	Before we call all the init functions, I also added these two lines of code :
+\end{lstlisting}
 
+Before we call all the init functions, I also added these two lines of code :
+
+\begin{lstlisting}[style=CStyle]
    files_cachep = kmem_cache_create("files_cache",
            sizeof(struct files_struct), 0,
            SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT,
@@ -567,13 +586,14 @@ I also changed the initcall invocation loop of lib\_init to this :
            SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT,
            NULL);
 \end{lstlisting}
-	These caches are required while setting up the fs\_struct and files\_struct for each new task in it’s corresponding task\_struct. Please see [5.9].
+
+These caches are required while setting up the \texttt{fs\_struct} and \texttt{files\_struct} for each new task in its corresponding \texttt{task\_struct}. Please see [5.9].
 
 
 \subsubsection{Security LSM Module}
-The security module of the Linux kernel depends on a special configuration called the CONFIG\_LSM. The LSM module requires a few architecture
-defined variables. Surprisingly, you cannot find them in the source code(.c or .h files) anywhere, rather they are placed in a specific section
-of the library/binary called .init.data section, through ASM code. net-next-nuse makes use of a linker script which can help us position variables inside
+The security module of the Linux kernel depends on a special configuration called the \texttt{CONFIG\_LSM}. The LSM module requires a few architecture
+defined variables. Surprisingly, one cannot find them in the source code (.c or .h files) anywhere; rather, they are placed in a specific section
+of the library/binary called .init.data section, through assembly code. net-next-nuse makes use of a linker script which can help us position variables inside
 the library under specific sections. I had to put this code in the linker.lds to initialise the start and end of the LSM table.
 \begin{lstlisting}[style=CStyle]
   . = ALIGN(CONSTANT (MAXPAGESIZE));
@@ -586,32 +606,37 @@ the library under specific sections. I had to put this code in the linker.lds to
 		__end_early_lsm_info = .;
   }
 \end{lstlisting}
-vfs\_kern\_mount(...) validates and parses params using security\_fs\_context\_parse\_param(...), which checks if the requested operation was blocked
+\texttt{vfs\_kern\_mount(...)} validates and parses params using \texttt{security\_fs\_context\_parse\_param(...)}, which checks if the requested operation was blocked
 in the LSM tables. If this module is not enabled, it would return back ENOPARAM by default and fail.
 
+\subsubsection{Kernel code and net-next-nuse alignment}
+In updating net-next-nuse, the \texttt{panic\_on\_taint} symbol had to be removed.  This symbol is exported while linking kernel/panic.c (needed for acknowledging kernel
+runtime errors) and accessing it in kernel/sysctl.c caused errors because it could not find it back. Also, including this symbol was unnecessary because its
+value defaults to zero and never changes during program execution.
 
-\subsubsection{Kernel Code - net-next-nuse Alignment}
-I had to remove the panic\_on\_taint symbol, which got exported while linking kernel/panic.c(we need to have this file for acknowledging kernel
-runtime errors) and accessing it in kernel/sysctl.c caused errors because it couldn’t find it back. Also, having this made no sense, as its value
-defaults to 0 and never changes during program execution. When the kernel gets initialized, it called mnt\_init, which is responsible for setting
-up the kernel file system (kernfs), the sysfs, ramfs, etc. and then makes a call to init\_mount\_tree, which sets up the required namespace for the
-all the mounts. This function will then make a corresponding call to vfs\_kern\_mount, which will use the vfs setup to initialise the file systems
-we need. vfs\_kern\_mount will set up the file context and mount it. In this process it checks for the security module and the LSM entries, to check
+When the kernel is initialized, it calls \texttt{mnt\_init}, which is
+responsible for setting
+up the kernel file system (kernfs), the sysfs, ramfs, etc. and then making a
+call to \texttt{init\_mount\_tree}, which sets up the required namespace for all
+mounts. This function will then make a corresponding call to \texttt{vfs\_kern\_mount}, which will use the vfs setup to initialize the needed file systems.
+\texttt{vfs\_kern\_mount} will set up the file context and mount it. In this process it checks for the security module and the LSM entries, to check
 if the kernel was not previously configured to avoid declaration of the specified namespace. If all checks pass, it returns back a vfsmount
-pointer. We then use this pointer to set up a mount namespace which initialises the data structure mt\_namespace, using alloc\_mnt\_ns . To
-initialize the mnt\_namespace object, we require the current tasks nsproxy, which is the user namespace proxy member. Every task is required to
+pointer. This pointer is used to set up a mount namespace which initializes the data structure \texttt{mnt\_namespace}, using \texttt{alloc\_mnt\_ns}. To
+initialize the \texttt{mnt\_namespace} object, the current tasks nsproxy is required, which is the user namespace proxy member. Every task is required to
 define some initial maximum value for each namespace it might require during the execution of the task. Similarly, for allocating a mount
-namespace it increases the UCOUNT\_MNT\_NAMESPACES of the current task’s nsproxy which has an upper bound of init\_task ‘s value. Since, we are not
-doing a complete arch port (we don’t need to), this value is not defined, and would through a SEGFAULT, when READ\_ONCE(...) tries to make an
-atomic operation on it to access it and increase the value by 1 if doing so doesn’t exceed the max limit, using the atomic\_inc\_below(..)  macro.
-We thus manually set the value for it, during task initialisation in lib\_task\_start(...).
+namespace, it increases the \texttt{UCOUNT\_MNT\_NAMESPACES} of the current task’s nsproxy, which has an upper bound of \texttt{init\_task}‘s value.  Since
+a complete architecture port is not needed, this value is not defined, and
+would throw a segmentation fault, when \texttt{READ\_ONCE(...)} tries to make
+an atomic operation on it to access it and increase the value by 1 if doing so doesn’t exceed the max limit, using the \texttt{atomic\_inc\_below(..)} macro.
+We thus manually set the value for it, during task initialisation in \texttt{lib\_task\_start(...)}.
 
 \begin{lstlisting}[style=CStyle]
 ucounts->ns->ucount_max[UCOUNT_MNT_NAMESPACES] = MNS_MAX;
 \end{lstlisting}
 
-But, we did set up the mount namespace, for the init task, but what for the other tasks ? We thus create a global variable def\_mnt\_ns and
-store a backup of the first mount namespace using an extern variable and then later on set it up in the lib\_task\_start(...)
+Although the mount namespace is set up for the init task, it is needed for other
+tasks as well.  We therefore created a global variable \texttt{def\_mnt\_ns} and
+stored a backup of the first mount namespace using an extern variable and then later on set it up in the \texttt{lib\_task\_start(...)}
 \begin{lstlisting}[style=CStyle]
 struct nsproxy *ns;
 ns->uts_ns = 0;
@@ -644,26 +669,21 @@ the mount environment. Initially, in net-next-nuse-4.4.0, mnt\_init(...)  was ma
 In older kernel releases, sockfs file system init did not depend on a file system context, and required a mount function (sockfs\_mount) which
 would directly mount the file system onto the kernel, but in commit [6.1], the socket file system mounting process was handed over to the
 internal VFS mounting mechanism, thus breaking our setup. So, now we need to have the mnt\_init(...) and put in patches and glue codes wherever
-needed. ToDo include/arm changes to files, for example, atomic, barrier, ptrace, user, user32/64….
-ToDo Rump kernel header file double include, adding flag to disable linux include
+needed.
+
+TODO: include/arm changes to files, for example, atomic, barrier, ptrace, user, user32/64….
+
+TODO: Rump kernel header file double include, adding flag to disable linux include
 
 \subsubsection{Native Kernel NetDevices}
-Certain components of ns-3 require to setup custom NetDevices which require a custom mtu and other flags such as should it be a multicast device,
-or a P2P device, or should it broadcast etc. These flags could be put togethers and we can allocate a netdevice for each such requirement using
-the alloc\_netdev(...), passing all the configurations needed for mtu,address length, and destructors, along with a register\_netdev(...) call.
-This would return back a forward declared struct SimDevice which is (probably)  casted to a NetDevice object inside ns-3.
-
+Certain components of ns-3 require the setup of custom NetDevices which require a custom MTU and other flags, such as whether the device should enable multicast, or is a point-to-point device, etc. These flags can be put together, and one can allocate a Linux netdevice struct for each such requirement using
+the \texttt{alloc\_netdev(...)}, passing all of the configuration needed for details such as MTU, address length, and destructors, along with a \texttt{register\_netdev(...)} call.
+This returns back a forward declared struct SimDevice which is used as a NetDevice object inside ns-3.
 
 \begin{itemize}
  \item Requests are provided in the form of API functions ...
  \item Notifications are provided as callback functions ...
 \end{itemize}
-
-The LTP may be run at different protocol layers in order to provide support for this
-we provide Convergence Layer adapters ...
-
-LTP uses engine IDs as its addressing system, we provide a lookup structure in the form of LTP to IP resolution tables ...
-
 
 \section{Results}
 
