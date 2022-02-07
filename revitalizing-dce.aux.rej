@@ -1,83 +1,82 @@
---- revitalizing-dce.aux
-+++ revitalizing-dce.aux
-@@ -16,34 +16,42 @@
+diff a/revitalizing-dce.aux b/revitalizing-dce.aux	(rejected hunks)
+@@ -16,42 +16,34 @@
  \gdef\HyperFirstAtBeginDocument#1{#1}
  \providecommand\HyField@AuxAddToFields[1]{}
  \providecommand\HyField@AuxAddToCoFields[2]{}
--\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{\thepage }{section.1}}
--\@writefile{toc}{\contentsline {section}{\numberline {2}Challenges}{\thepage }{section.2}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}libio vtable mangling}{\thepage }{subsection.2.1}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}PIE loading and usage}{\thepage }{subsection.2.2}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Linux Networking Stack for DCE}{\thepage }{subsection.2.3}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}LKL}{\thepage }{subsubsection.2.3.1}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}LibOS}{\thepage }{subsubsection.2.3.2}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}LKL vs. LibOS}{\thepage }{subsubsection.2.3.3}}
--\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.1}Linux Kernel Support}{\thepage }{paragraph.2.3.3.1}}
--\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.2}In-Library Kernel Boot Order}{\thepage }{paragraph.2.3.3.2}}
--\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.3}Maintenance}{\thepage }{paragraph.2.3.3.3}}
--\@writefile{toc}{\contentsline {section}{\numberline {3}Solutions}{\thepage }{section.3}}
-+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{\thepage }{section.1}\protected@file@percent }
-+\@writefile{toc}{\contentsline {section}{\numberline {2}Challenges}{\thepage }{section.2}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}libio vtable mangling}{\thepage }{subsection.2.1}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}PIE loading and usage}{\thepage }{subsection.2.2}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Linux Networking Stack for DCE}{\thepage }{subsection.2.3}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}LKL}{\thepage }{subsubsection.2.3.1}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}LibOS}{\thepage }{subsubsection.2.3.2}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}LKL vs. LibOS}{\thepage }{subsubsection.2.3.3}\protected@file@percent }
-+\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.1}Linux Kernel Support}{\thepage }{paragraph.2.3.3.1}\protected@file@percent }
-+\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.2}In-Library Kernel Boot Order}{\thepage }{paragraph.2.3.3.2}\protected@file@percent }
-+\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.3}Maintenance}{\thepage }{paragraph.2.3.3.3}\protected@file@percent }
-+\@writefile{toc}{\contentsline {section}{\numberline {3}Solutions}{\thepage }{section.3}\protected@file@percent }
+-\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{\thepage }{section.1}\protected@file@percent }
+-\@writefile{toc}{\contentsline {section}{\numberline {2}Challenges}{\thepage }{section.2}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}libio vtable mangling}{\thepage }{subsection.2.1}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}PIE loading and usage}{\thepage }{subsection.2.2}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Linux Networking Stack for DCE}{\thepage }{subsection.2.3}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}LKL}{\thepage }{subsubsection.2.3.1}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}LibOS}{\thepage }{subsubsection.2.3.2}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}LKL vs. LibOS}{\thepage }{subsubsection.2.3.3}\protected@file@percent }
+-\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.1}Linux Kernel Support}{\thepage }{paragraph.2.3.3.1}\protected@file@percent }
+-\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.2}In-Library Kernel Boot Order}{\thepage }{paragraph.2.3.3.2}\protected@file@percent }
+-\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.3}Maintenance}{\thepage }{paragraph.2.3.3.3}\protected@file@percent }
+-\@writefile{toc}{\contentsline {section}{\numberline {3}Solutions}{\thepage }{section.3}\protected@file@percent }
++\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{\thepage }{section.1}}
++\@writefile{toc}{\contentsline {section}{\numberline {2}Challenges}{\thepage }{section.2}}
++\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}libio vtable mangling}{\thepage }{subsection.2.1}}
++\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}PIE loading and usage}{\thepage }{subsection.2.2}}
++\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Linux Networking Stack for DCE}{\thepage }{subsection.2.3}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.1}LKL}{\thepage }{subsubsection.2.3.1}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.2}LibOS}{\thepage }{subsubsection.2.3.2}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.3.3}LKL vs. LibOS}{\thepage }{subsubsection.2.3.3}}
++\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.1}Linux Kernel Support}{\thepage }{paragraph.2.3.3.1}}
++\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.2}In-Library Kernel Boot Order}{\thepage }{paragraph.2.3.3.2}}
++\@writefile{toc}{\contentsline {paragraph}{\numberline {2.3.3.3}Maintenance}{\thepage }{paragraph.2.3.3.3}}
++\@writefile{toc}{\contentsline {section}{\numberline {3}Solutions}{\thepage }{section.3}}
  \newlabel{section:design}{{3}{\thepage }{Solutions}{section.3}{}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Custom glibc-2.31-based build}{\thepage }{subsection.3.1}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Bake Build Automation}{\thepage }{subsection.3.2}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Docker environnment for DCE}{\thepage }{subsection.3.3}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}net-next-nuse-5.10}{\thepage }{subsection.3.4}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Background}{\thepage }{subsubsection.3.4.1}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}Slab Allocator}{\thepage }{subsubsection.3.4.2}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.3}Virtual Kernel Task and its Real Fiber Equivalent}{\thepage }{subsubsection.3.4.3}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.4}Scheduler Workqueue/Waitqueue Implementation}{\thepage }{subsubsection.3.4.4}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.5}Jiffies timer}{\thepage }{subsubsection.3.4.5}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.6}Kernel initialization}{\thepage }{subsubsection.3.4.6}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.7}Security LSM Module}{\thepage }{subsubsection.3.4.7}}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.8}Kernel code and net-next-nuse alignment}{\thepage }{subsubsection.3.4.8}}
-+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Custom glibc-2.31 Based Build}{\thepage }{subsection.3.1}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Bake Build Automation}{\thepage }{subsection.3.2}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Docker environenment for DCE}{\thepage }{subsection.3.3}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}net-next-nuse-5.10}{\thepage }{subsection.3.4}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Background}{\thepage }{subsubsection.3.4.1}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}Slib Allocator}{\thepage }{subsubsection.3.4.2}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.3}Virtual Kernel Task and its Real Fiber Equivalent}{\thepage }{subsubsection.3.4.3}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.4}Scheduler Workqueue/Waitqueue Implementation}{\thepage }{subsubsection.3.4.4}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.5}Jiffies Timer}{\thepage }{subsubsection.3.4.5}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.6}Kernel Initialisation}{\thepage }{subsubsection.3.4.6}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.7}Security LSM Module}{\thepage }{subsubsection.3.4.7}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.8}Kernel Code - net-next-nuse Alignment}{\thepage }{subsubsection.3.4.8}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Custom glibc-2.31 Based Build}{\thepage }{subsection.3.1}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Bake Build Automation}{\thepage }{subsection.3.2}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Docker environenment for DCE}{\thepage }{subsection.3.3}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}net-next-nuse-5.10}{\thepage }{subsection.3.4}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Background}{\thepage }{subsubsection.3.4.1}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}Slib Allocator}{\thepage }{subsubsection.3.4.2}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.3}Virtual Kernel Task and its Real Fiber Equivalent}{\thepage }{subsubsection.3.4.3}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.4}Scheduler Workqueue/Waitqueue Implementation}{\thepage }{subsubsection.3.4.4}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.5}Jiffies Timer}{\thepage }{subsubsection.3.4.5}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.6}Kernel Initialisation}{\thepage }{subsubsection.3.4.6}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.7}Security LSM Module}{\thepage }{subsubsection.3.4.7}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.8}Kernel Code - net-next-nuse Alignment}{\thepage }{subsubsection.3.4.8}\protected@file@percent }
++\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Custom glibc-2.31-based build}{\thepage }{subsection.3.1}}
++\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Bake Build Automation}{\thepage }{subsection.3.2}}
++\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Docker environnment for DCE}{\thepage }{subsection.3.3}}
++\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}net-next-nuse-5.10}{\thepage }{subsection.3.4}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Background}{\thepage }{subsubsection.3.4.1}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}Slab Allocator}{\thepage }{subsubsection.3.4.2}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.3}Virtual Kernel Task and its Real Fiber Equivalent}{\thepage }{subsubsection.3.4.3}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.4}Scheduler Workqueue/Waitqueue Implementation}{\thepage }{subsubsection.3.4.4}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.5}Jiffies timer}{\thepage }{subsubsection.3.4.5}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.6}Kernel initialization}{\thepage }{subsubsection.3.4.6}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.7}Security LSM Module}{\thepage }{subsubsection.3.4.7}}
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.8}Kernel code and net-next-nuse alignment}{\thepage }{subsubsection.3.4.8}}
  \bibstyle{abbrv}
  \bibdata{ltp-ns-3-workshop}
  \bibcite{snug}{1}
-+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.9}Native Kernel NetDevices}{\thepage }{subsubsection.3.4.9}\protected@file@percent }
-+\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{\thepage }{section.4}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Docker vs Native DCE Simulation Tests}{\thepage }{subsection.4.1}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Performance : DCE vs. ns-3}{\thepage }{subsection.4.2}\protected@file@percent }
-+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Google BBR v1 Validation Results}{\thepage }{subsection.4.3}\protected@file@percent }
-+\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{\thepage }{section.5}\protected@file@percent }
-+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{\thepage }{section.6}\protected@file@percent }
-+\@writefile{toc}{\contentsline {section}{\numberline {7}Acknowledgments}{\thepage }{section.7}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.9}Native Kernel NetDevices}{\thepage }{subsubsection.3.4.9}\protected@file@percent }
+-\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{\thepage }{section.4}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Docker vs Native DCE Simulation Tests}{\thepage }{subsection.4.1}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Performance : DCE vs. ns-3}{\thepage }{subsection.4.2}\protected@file@percent }
+-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Google BBR v1 Validation Results}{\thepage }{subsection.4.3}\protected@file@percent }
+-\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{\thepage }{section.5}\protected@file@percent }
+-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{\thepage }{section.6}\protected@file@percent }
+-\@writefile{toc}{\contentsline {section}{\numberline {7}Acknowledgments}{\thepage }{section.7}\protected@file@percent }
  \bibcite{omnet}{2}
  \bibcite{one}{3}
  \bibcite{ltplib}{4}
-@@ -51,12 +59,4 @@
+@@ -59,4 +51,12 @@
  \bibcite{ion}{6}
  \bibcite{core}{7}
  \bibcite{Wang:2011:LTP:2042947.2042952}{8}
--\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.9}Native Kernel NetDevices}{\thepage }{subsubsection.3.4.9}}
--\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{\thepage }{section.4}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Docker vs Native DCE Simulation Tests}{\thepage }{subsection.4.1}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Performance : DCE vs. ns-3}{\thepage }{subsection.4.2}}
--\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Google BBR v1 Validation Results}{\thepage }{subsection.4.3}}
--\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{\thepage }{section.5}}
--\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{\thepage }{section.6}}
--\@writefile{toc}{\contentsline {section}{\numberline {7}Acknowledgments}{\thepage }{section.7}}
--\@writefile{toc}{\contentsline {section}{\numberline {8}References}{\thepage }{section.8}}
-+\@writefile{toc}{\contentsline {section}{\numberline {8}References}{\thepage }{section.8}\protected@file@percent }
+-\@writefile{toc}{\contentsline {section}{\numberline {8}References}{\thepage }{section.8}\protected@file@percent }
++\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.9}Native Kernel NetDevices}{\thepage }{subsubsection.3.4.9}}
++\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{\thepage }{section.4}}
++\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Docker vs Native DCE Simulation Tests}{\thepage }{subsection.4.1}}
++\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Performance : DCE vs. ns-3}{\thepage }{subsection.4.2}}
++\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Google BBR v1 Validation Results}{\thepage }{subsection.4.3}}
++\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{\thepage }{section.5}}
++\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{\thepage }{section.6}}
++\@writefile{toc}{\contentsline {section}{\numberline {7}Acknowledgments}{\thepage }{section.7}}
++\@writefile{toc}{\contentsline {section}{\numberline {8}References}{\thepage }{section.8}}

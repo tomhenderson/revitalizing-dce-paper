@@ -552,10 +552,10 @@ I also changed the initcall invocation loop of lib\_init to this :
    call = __initcall_start;
    do {               
        initcall_from_entry(call)();               
-       call++;    
+       call++;
    } while (call < __initcall_end);
 
-	Before we call all the init functions, I also added these two lines of code : 
+	Before we call all the init functions, I also added these two lines of code :
 
    files_cachep = kmem_cache_create("files_cache",
            sizeof(struct files_struct), 0,
@@ -571,11 +571,11 @@ I also changed the initcall invocation loop of lib\_init to this :
 
 
 \subsubsection{Security LSM Module}
-The security module of the Linux kernel depends on a special configuration called the CONFIG\_LSM. The LSM module requires a few architecture 
-defined variables. Surprisingly, you cannot find them in the source code(.c or .h files) anywhere, rather they are placed in a specific section 
-of the library/binary called .init.data section, through ASM code. net-next-nuse makes use of a linker script which can help us position variables inside 
-the library under specific sections. I had to put this code in the linker.lds to initialise the start and end of the LSM table. 
-\begin{lstlisting}[style=CStyle] 
+The security module of the Linux kernel depends on a special configuration called the CONFIG\_LSM. The LSM module requires a few architecture
+defined variables. Surprisingly, you cannot find them in the source code(.c or .h files) anywhere, rather they are placed in a specific section
+of the library/binary called .init.data section, through ASM code. net-next-nuse makes use of a linker script which can help us position variables inside
+the library under specific sections. I had to put this code in the linker.lds to initialise the start and end of the LSM table.
+\begin{lstlisting}[style=CStyle]
   . = ALIGN(CONSTANT (MAXPAGESIZE));
   .init.data : AT(ADDR(.init.data)) {    
 		__start_lsm_info = .;	
@@ -586,34 +586,34 @@ the library under specific sections. I had to put this code in the linker.lds to
 		__end_early_lsm_info = .;
   }
 \end{lstlisting}
-vfs\_kern\_mount(...) validates and parses params using security\_fs\_context\_parse\_param(...), which checks if the requested operation was blocked 
-in the LSM tables. If this module is not enabled, it would return back ENOPARAM by default and fail. 
+vfs\_kern\_mount(...) validates and parses params using security\_fs\_context\_parse\_param(...), which checks if the requested operation was blocked
+in the LSM tables. If this module is not enabled, it would return back ENOPARAM by default and fail.
 
 
 \subsubsection{Kernel Code - net-next-nuse Alignment}
-I had to remove the panic\_on\_taint symbol, which got exported while linking kernel/panic.c(we need to have this file for acknowledging kernel 
-runtime errors) and accessing it in kernel/sysctl.c caused errors because it couldn’t find it back. Also, having this made no sense, as its value 
-defaults to 0 and never changes during program execution. When the kernel gets initialized, it called mnt\_init, which is responsible for setting 
-up the kernel file system (kernfs), the sysfs, ramfs, etc. and then makes a call to init\_mount\_tree, which sets up the required namespace for the 
-all the mounts. This function will then make a corresponding call to vfs\_kern\_mount, which will use the vfs setup to initialise the file systems 
-we need. vfs\_kern\_mount will set up the file context and mount it. In this process it checks for the security module and the LSM entries, to check 
-if the kernel was not previously configured to avoid declaration of the specified namespace. If all checks pass, it returns back a vfsmount 
-pointer. We then use this pointer to set up a mount namespace which initialises the data structure mt\_namespace, using alloc\_mnt\_ns . To 
-initialize the mnt\_namespace object, we require the current tasks nsproxy, which is the user namespace proxy member. Every task is required to 
-define some initial maximum value for each namespace it might require during the execution of the task. Similarly, for allocating a mount 
-namespace it increases the UCOUNT\_MNT\_NAMESPACES of the current task’s nsproxy which has an upper bound of init\_task ‘s value. Since, we are not 
-doing a complete arch port (we don’t need to), this value is not defined, and would through a SEGFAULT, when READ\_ONCE(...) tries to make an 
-atomic operation on it to access it and increase the value by 1 if doing so doesn’t exceed the max limit, using the atomic\_inc\_below(..)  macro. 
-We thus manually set the value for it, during task initialisation in lib\_task\_start(...).  
+I had to remove the panic\_on\_taint symbol, which got exported while linking kernel/panic.c(we need to have this file for acknowledging kernel
+runtime errors) and accessing it in kernel/sysctl.c caused errors because it couldn’t find it back. Also, having this made no sense, as its value
+defaults to 0 and never changes during program execution. When the kernel gets initialized, it called mnt\_init, which is responsible for setting
+up the kernel file system (kernfs), the sysfs, ramfs, etc. and then makes a call to init\_mount\_tree, which sets up the required namespace for the
+all the mounts. This function will then make a corresponding call to vfs\_kern\_mount, which will use the vfs setup to initialise the file systems
+we need. vfs\_kern\_mount will set up the file context and mount it. In this process it checks for the security module and the LSM entries, to check
+if the kernel was not previously configured to avoid declaration of the specified namespace. If all checks pass, it returns back a vfsmount
+pointer. We then use this pointer to set up a mount namespace which initialises the data structure mt\_namespace, using alloc\_mnt\_ns . To
+initialize the mnt\_namespace object, we require the current tasks nsproxy, which is the user namespace proxy member. Every task is required to
+define some initial maximum value for each namespace it might require during the execution of the task. Similarly, for allocating a mount
+namespace it increases the UCOUNT\_MNT\_NAMESPACES of the current task’s nsproxy which has an upper bound of init\_task ‘s value. Since, we are not
+doing a complete arch port (we don’t need to), this value is not defined, and would through a SEGFAULT, when READ\_ONCE(...) tries to make an
+atomic operation on it to access it and increase the value by 1 if doing so doesn’t exceed the max limit, using the atomic\_inc\_below(..)  macro.
+We thus manually set the value for it, during task initialisation in lib\_task\_start(...).
 
-\begin{lstlisting}[style=CStyle] 
+\begin{lstlisting}[style=CStyle]
 ucounts->ns->ucount_max[UCOUNT_MNT_NAMESPACES] = MNS_MAX;
 \end{lstlisting}
 
-But, we did set up the mount namespace, for the init task, but what for the other tasks ? We thus create a global variable def\_mnt\_ns and 
-store a backup of the first mount namespace using an extern variable and then later on set it up in the lib\_task\_start(...) 
-\begin{lstlisting}[style=CStyle] 
-struct nsproxy *ns;   
+But, we did set up the mount namespace, for the init task, but what for the other tasks ? We thus create a global variable def\_mnt\_ns and
+store a backup of the first mount namespace using an extern variable and then later on set it up in the lib\_task\_start(...)
+\begin{lstlisting}[style=CStyle]
+struct nsproxy *ns;
 ns->uts_ns = 0;
 ns->ipc_ns = 0;
 ns->mnt_ns = def_mnt_ns;
@@ -641,17 +641,17 @@ sim\_init is invoked by DCE. First of all before we proceed with anything, it is
 so that the sysctl interface could be initialised by the net\_sysctl\_init(...). We then register the sockfs filesystem using register\_filesystem(...) 
 and go for a kern\_mount(...) which invokes the VFS kern mount function and as discussed above, it requires the mnt\_init(...) to correctly setup 
 the mount environment. Initially, in net-next-nuse-4.4.0, mnt\_init(...)  was made a blank function, and we have reasons to support it. 
-In older kernel releases, sockfs file system init did not depend on a file system context, and required a mount function (sockfs\_mount) which 
-would directly mount the file system onto the kernel, but in commit [6.1], the socket file system mounting process was handed over to the 
-internal VFS mounting mechanism, thus breaking our setup. So, now we need to have the mnt\_init(...) and put in patches and glue codes wherever 
+In older kernel releases, sockfs file system init did not depend on a file system context, and required a mount function (sockfs\_mount) which
+would directly mount the file system onto the kernel, but in commit [6.1], the socket file system mounting process was handed over to the
+internal VFS mounting mechanism, thus breaking our setup. So, now we need to have the mnt\_init(...) and put in patches and glue codes wherever
 needed. ToDo include/arm changes to files, for example, atomic, barrier, ptrace, user, user32/64….
 ToDo Rump kernel header file double include, adding flag to disable linux include
 
 \subsubsection{Native Kernel NetDevices}
-Certain components of ns-3 require to setup custom NetDevices which require a custom mtu and other flags such as should it be a multicast device, 
-or a P2P device, or should it broadcast etc. These flags could be put togethers and we can allocate a netdevice for each such requirement using 
+Certain components of ns-3 require to setup custom NetDevices which require a custom mtu and other flags such as should it be a multicast device,
+or a P2P device, or should it broadcast etc. These flags could be put togethers and we can allocate a netdevice for each such requirement using
 the alloc\_netdev(...), passing all the configurations needed for mtu,address length, and destructors, along with a register\_netdev(...) call.
-This would return back a forward declared struct SimDevice which is (probably)  casted to a NetDevice object inside ns-3. 
+This would return back a forward declared struct SimDevice which is (probably)  casted to a NetDevice object inside ns-3.
 
 
 \begin{itemize}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  7 FEB 2022 18:33
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  7 FEB 2022 18:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -840,55 +840,88 @@ Overfull \hbox (25.68355pt too wide) in paragraph at lines 532--548
 es_init
  []
 
+LaTeX Font Info:    Trying to load font information for T1+aett on input line 5
+74.
+(/usr/share/texlive/texmf-dist/tex/latex/ae/t1aett.fd
+File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
+)
+Overfull \hbox (4.79387pt too wide) in paragraph at lines 593--595
+\T1/aer/m/n/9 this mod-ule is not en-abled, it would re-turn back ENOPARAM
+ []
 
-Overfull \hbox (3.4898pt too wide) in paragraph at lines 570--571
-\T1/aer/m/n/9 files_struct for each new task in it's cor-re-spond-ing task_stru
-ct.
+
+Overfull \hbox (3.46883pt too wide) in paragraph at lines 601--616
+\T1/aer/m/n/9 sysfs, ramfs, etc. and then mak-ing a call to \T1/aett/m/n/9 init
+_mount_tree\T1/aer/m/n/9 ,
+ []
+
+
+Overfull \hbox (14.4522pt too wide) in paragraph at lines 601--616
+\T1/aer/m/n/9 func-tion will then make a cor-re-spond-ing call to \T1/aett/m/n/
+9 vfs_kern_mount\T1/aer/m/n/9 ,
+ []
+
+
+Overfull \hbox (8.24945pt too wide) in paragraph at lines 601--616
+\T1/aer/m/n/9 value for it, dur-ing task ini-tial-i-sa-tion in \T1/aett/m/n/9 l
+ib_task_start(...)\T1/aer/m/n/9 . 
  []
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.608 
+l.616 
        [6]
 
 LaTeX Font Warning: Font shape `TS1/aer/m/it' undefined
 (Font)              using `TS1/aer/m/n' instead
-(Font)              for symbol `textasteriskcentered' on input line 621.
+(Font)              for symbol `textasteriskcentered' on input line 630.
+
+
+Overfull \hbox (1.1199pt too wide) in paragraph at lines 663--666
+\T1/aer/m/n/9 length, and de-struc-tors, along with a \T1/aett/m/n/9 reg-is-ter
+_netdev(...)
+ []
 
 (./revitalizing-dce.bblpdfTeX warning (ext4): destination with the same identif
 ier (name{page.}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.16 
+l.24 
       [7])pdfTeX warning (ext4): destination with the same identifier (name{pag
 e.}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.700 \end{document}
+l.704 \end{document}
                      [8
 
 ]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 700.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 700.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 704.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 704.
  (./revitalizing-dce.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 700.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 700.
-Package rerunfilecheck Info: File `revitalizing-dce.out' has not changed.
-(rerunfilecheck)             Checksum: A0413079E1FB24D0931EDFBB9A1607F9;2100.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 704.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 704.
 
+
+Package rerunfilecheck Warning: File `revitalizing-dce.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `revitalizing-dce.out':
+(rerunfilecheck)             Before: 5FE4B87151B7E6A9751C328ACD363D7E;2101
+(rerunfilecheck)             After:  2181FF36B56AD98DC36C6A2D532CD17B;2102.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 700.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 704.
  ) 
 Here is how much of TeX's memory you used:
- 18893 strings out of 483183
- 340523 string characters out of 5966292
- 842532 words of memory out of 5000000
- 33421 multiletter control sequences out of 15000+600000
- 578971 words of font info for 77 fonts, out of 8000000 for 9000
+ 18891 strings out of 483183
+ 340655 string characters out of 5966292
+ 834532 words of memory out of 5000000
+ 33415 multiletter control sequences out of 15000+600000
+ 579817 words of font info for 80 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  60i,11n,60p,475b,1863s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc} </home/parth/.tex
@@ -897,15 +930,16 @@ ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmb10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/ty
 pe1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
-lic/amsfonts/cm/cmti9.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvet
-ic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pf
-b></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/t
-exlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-di
-st/fonts/type1/urw/times/utmri8a.pfb>
-Output written on revitalizing-dce.pdf (8 pages, 188331 bytes).
+lic/amsfonts/cm/cmti9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmtt9.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb
+8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr
+/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/
+texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/font
+s/type1/urw/times/utmri8a.pfb>
+Output written on revitalizing-dce.pdf (8 pages, 201067 bytes).
 PDF statistics:
- 301 PDF objects out of 1000 (max. 8388607)
+ 302 PDF objects out of 1000 (max. 8388607)
  276 compressed objects within 3 object streams
- 103 named destinations out of 1000 (max. 500000)
+ 101 named destinations out of 1000 (max. 500000)
  253 words of extra memory for PDF output out of 10000 (max. 10000000)
 
