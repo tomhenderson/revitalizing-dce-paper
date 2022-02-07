@@ -638,6 +638,11 @@ Although the mount namespace is set up for the init task, it is needed for other
 tasks as well.  We therefore created a global variable \texttt{def\_mnt\_ns} and
 stored a backup of the first mount namespace using an extern variable and then later on set it up in the \texttt{lib\_task\_start(...)}
 \begin{lstlisting}[style=CStyle]
+extern struct path def_root;
+extern struct mnt_namespace *def_mnt_ns;
+
+static void __init init_mount_tree(void){
+  ...
 struct nsproxy *ns;
 ns->uts_ns = 0;
 ns->ipc_ns = 0;
@@ -645,30 +650,35 @@ ns->mnt_ns = def_mnt_ns;
 ns->pid_ns_for_children = 0;
 ns->net_ns = &init_net; // global struct * net   
 task->kernel_task.nsproxy = ns;
+  ...
+
+def_root = root;	
+def_mnt_ns = ns;
+
+  ...
+}
 \end{lstlisting}
 
-This seems good right ? But what  is def\_root ? Ok, I had to hack this again XD.
-Remember init\_mount\_tree, we discussed it in the pointer above. What does it do ?  It sets up a vfs mount. Okay, does that mean a path somewhere 
-in the kernel ? Yes it should have. I also found another line of code there : 
-init\_task.nsproxy->mnt\_ns = ns;
+\texttt{init\_mount\_tree} , as discussed before, sets up a vfs mount, which would have it's own path. The assignment, 
+\texttt{init\_task.nsproxy->mnt\_ns = ns;}, implies that the first task has the mount namespace generated, allocates the mount tree and 
+acquire an an \texttt{mnt\_namespace}. Also, Linux reuse some of the previous data from the \texttt{init\_task} and replicate them in new tasks,
 
-Okay, does this mean that the first task has the mount namespace generated while we mount and allocate the mount tree and acquire an mnt\_namespace. 
-What else can we observe here ? How does the Linux Kernel create tasks then ? Do you remember doing these when you create processes on your OS ? 
-No, right ? Which means, do we reuse some of the previous data from the init\_task and replicate them in new tasks. Yes, we do. Whenever we create 
-a kernel\_thread(..) it calls copy\_process(...) which copies some of the required parameters from the host task, depending upon the flags you pass 
-it. For example, If you had set the CLONE\_FS flag, it would copy the fs\_struct from the init\_task to the newly made task, by calling copy\_fs(..)
-in kernel/fork.c. Which means, if we never have diverse task member requirements we can just reuse the previous task, implying the first task ?  
-Right ! So, we can then just declare a global def\_root and then by declaring an extern variable for it, and keep reusing !
+Whenever we create a \texttt{kernel\_thread(..)} it calls \texttt{copy\_process(...)} which copies some of the required parameters from the host task, 
+depending upon the flags you pass 
+it. For example, If you had set the \texttt{CLONE\_FS} flag, it would copy the \texttt{fs\_struct} from the \texttt{init\_task} to the newly made task, 
+by calling \texttt{copy\_fs(..)}
+in kernel/fork.c. So, all our DCE tasks have similar properties and privileges, we can just reuse the previous task. 
+We can then just declare a global \texttt{def\_root} and then by declaring an extern variable for it reuse it for future tasks.
 
-The netif\_napi\_add tests for the NAPI\_STATE\_LISTED bit to be enabled in the state of the napi\_struct passed on to it from cgroup init calls. 
-We never set this flag directly, so this check was removed from the kernel code. sock\_init is one of the many initcalls which are called when 
-sim\_init is invoked by DCE. First of all before we proceed with anything, it is necessary that we have initialised the proc file system completely,
-so that the sysctl interface could be initialised by the net\_sysctl\_init(...). We then register the sockfs filesystem using register\_filesystem(...) 
-and go for a kern\_mount(...) which invokes the VFS kern mount function and as discussed above, it requires the mnt\_init(...) to correctly setup 
-the mount environment. Initially, in net-next-nuse-4.4.0, mnt\_init(...)  was made a blank function, and we have reasons to support it. 
-In older kernel releases, sockfs file system init did not depend on a file system context, and required a mount function (sockfs\_mount) which
+The \texttt{netif\_napi\_add} tests for the \texttt{NAPI\_STATE\_LISTED} bit to be enabled in the state of the napi\_struct passed on to it from cgroup init calls. 
+We never set this flag directly, so this check was removed from the kernel code. \texttt{sock\_init} is one of the many initcalls which are called when 
+\texttt{sim\_init} is invoked by DCE. First of all before we proceed with anything, it is necessary that we have initialised the proc file system completely,
+so that the sysctl interface could be initialised by the \texttt{net\_sysctl\_init(...)}. We then register the sockfs filesystem using \texttt{register\_filesystem(...)} 
+and go for a \texttt{kern\_mount(...)} which invokes the VFS kern mount function and as discussed above, it requires the \texttt{mnt\_init(...)} to correctly setup 
+the mount environment. Initially, in net-next-nuse-4.4.0, \texttt{mnt\_init(...)}  was made a blank function, and we have reasons to support it. 
+In older kernel releases, sockfs file system init did not depend on a file system context, and required a mount function (\texttt{sockfs\_mount}) which
 would directly mount the file system onto the kernel, but in commit [6.1], the socket file system mounting process was handed over to the
-internal VFS mounting mechanism, thus breaking our setup. So, now we need to have the mnt\_init(...) and put in patches and glue codes wherever
+internal VFS mounting mechanism, thus breaking our setup. So, now we need to have the \texttt{mnt\_init(...)} and put in patches and glue codes wherever
 needed.
 
 TODO: include/arm changes to files, for example, atomic, barrier, ptrace, user, user32/64….
