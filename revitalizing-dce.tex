@@ -417,29 +417,27 @@ which does a bidirectional mapping of the imported(DCE → Linux) and exported(L
 The implementation of net-next-nuse strictly considers only the use case of DCE and thus might not find application outside of DCE unlike LKL which
 is designed for running a plethora of networking applications, but it fits in really well when it comes to DCE. 
 
-Let's start with the Makefile design of net-next-nuse, because that's where the story begins. When Linux builds, apart from all other files, it generates 
-two important files vmlinuz and initramfs. The file vmlinux is where all the kernel code(/kernel /mm /fs /net /security ...) is compiled and 
-linked. When it comes to LKL, all it does it does a raw objcopy on the generated object files vmlinux and copies all symbols from vmlinux along 
-with the global functions exported from the LKL arch port, and combines them into a final library called lkl.o, which is then passed on to the 
-tools/lkl, to link the host, netdevice, utility, filesystem, and networking handler codes to make the final liblkl.so shared library. 
-Seems good right ? Well, it did seem to me when I wrote my proposal, until I identified how it could actually become a bottleneck. 
+When Linux builds, apart from all other files, it generates two important files vmlinuz and initramfs. The file vmlinux is where all the kernel 
+code(/kernel /mm /fs /net /security ...) is compiled and linked. When it comes to LKL, it does a raw objcopy on the generated object 
+files vmlinux and copies all symbols from vmlinux along with the global functions exported from the LKL arch port, and combines them into a final 
+library called lkl.o, which is then passed on to the tools/lkl, to link the host, netdevice, utility, filesystem, and networking handler codes to 
+make the final liblkl.so shared library.
 
-Now let’s see how net-next-nuse does it. net-next-nuse understands that the way Linux Kernel behaves on the host, and the way the kernel interacts with the task 
+net-next-nuse understands that the way Linux Kernel behaves on the host, and the way the kernel interacts with the task 
 scheduler and how the scheduler operates on the tasks, is completely different from how DCE manages fibers(called task in DCE terminologies). 
 DCE is based on context based light weight threads called fibers, which require a custom scheduler, called TaskManager in DCE. On an ordinary
 host machine when you run any application, and then you spin up normal threads, you would not need to bother about scheduling the threads on 
 the different cores of your cpu and maintaining mutex locks of the cpu, making the kernel responsible for jumping from one thread to another. 
 But when you use fibers, you can jump from one thread to another only when one of the fibers yields to another fiber, and this context switch 
-is done by a custom scheduler, which is written in TaskManager::Schedule(). Wonder how that is good ? Because when you use ordinary threads, 
-the number of context switches the CPU has to do (push your thread data stack on to you address space, in and out), is a lot more expensive 
-than making switches in Fibers.
+is done by a custom scheduler, which is written in TaskManager::Schedule(). When you use ordinary threads, the number of context switches the 
+CPU has to do (push your thread data stack on to you address space, in and out), is a lot more expensive than making switches in Fibers.
 
-That seems good though, but now we have a problem. We have a scheduler inside DCE, but now when we load a linux kernel library, we also 
-have a scheduler that comes along with it. So, every new operation that you make inside the kernel creates something called a (virtual) 
-kernel thread. But, how do we manage those threads, because the DCE TaskManager cannot see them because it’s virtual. That’s where net-next-nuse 
-comes into play, it does a selective linking of kernel modules and utilities and avoids linking of the scheduler, workqueue, waitqueue 
-and other such linked components, and rather implements them using DCE imported functions which maps to TaskManager utilities. So everytime 
-some process wants to preempt and block, the kernel calls schedule() or schedule\_timeout(), and we pass control to DCE to take care of it. 
+We have a scheduler inside DCE, but now when we load a linux kernel library, we also have a scheduler that comes along with it. \
+So, every new operation that you make inside the kernel creates something called a (virtual) kernel thread. But manage those threads is seemingly 
+difficult because the DCE TaskManager cannot see them as it’s virtual. net-next-nuse does a selective linking of 
+kernel modules and utilities and avoids linking of the scheduler, workqueue, waitqueue and other such linked components, and rather implements 
+them using DCE imported functions which maps to TaskManager utilities. So everytime some process wants to preempt and block, the kernel calls 
+schedule() or schedule\_timeout(), and we pass control to DCE to take care of it. 
 
 \subsubsection{Slib Allocator}
 When the kernel is booted up by net-next-nuse in lib\_init(...), it calls some of the required initialisation functions, and all, included, initcalls. 
