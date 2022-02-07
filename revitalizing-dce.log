@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  7 FEB 2022 19:46
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  7 FEB 2022 19:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -862,13 +862,31 @@ LaTeX Font Warning: Font shape `TS1/aer/m/it' undefined
 (Font)              using `TS1/aer/m/n' instead
 (Font)              for symbol `textasteriskcentered' on input line 651.
 
+
+Overfull \hbox (3.48685pt too wide) in paragraph at lines 662--665
+[]\T1/aett/m/n/9 init_mount_tree \T1/aer/m/n/9 , as dis-cussed be-fore, sets up
+ a vfs mount,
+ []
+
+
+Overfull \hbox (41.23438pt too wide) in paragraph at lines 662--665
+\T1/aer/m/n/9 which would have it's own path. The as-sign-ment, \T1/aett/m/n/9 
+init_task.nsproxy-
+ []
+
+
+Overfull \hbox (48.72424pt too wide) in paragraph at lines 666--672
+[]\T1/aer/m/n/9 Whenever we cre-ate a \T1/aett/m/n/9 ker-nel_thread(..) \T1/aer
+/m/n/9 it calls \T1/aett/m/n/9 copy_process(...)
+ []
+
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.685 
+l.683 
        [7]
-Overfull \hbox (1.1199pt too wide) in paragraph at lines 691--694
+Overfull \hbox (1.1199pt too wide) in paragraph at lines 689--692
 \T1/aer/m/n/9 length, and de-struc-tors, along with a \T1/aett/m/n/9 reg-is-ter
 _netdev(...)
  []
@@ -877,20 +895,20 @@ _netdev(...)
 fier (name{page.}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.732 \end{document}
+l.730 \end{document}
                      [8]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 732.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 732.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 730.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 730.
  (./revitalizing-dce.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 732.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 732.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 730.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 730.
 Package rerunfilecheck Info: File `revitalizing-dce.out' has not changed.
 (rerunfilecheck)             Checksum: 5FE4B87151B7E6A9751C328ACD363D7E;2101.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 732.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 730.
  ) 
 Here is how much of TeX's memory you used:
  18914 strings out of 483183
@@ -912,7 +930,7 @@ fonts/cm/cmtt9.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb
 /share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/
 texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/font
 s/type1/urw/times/utmri8a.pfb>
-Output written on revitalizing-dce.pdf (8 pages, 205634 bytes).
+Output written on revitalizing-dce.pdf (8 pages, 204701 bytes).
 PDF statistics:
  316 PDF objects out of 1000 (max. 8388607)
  291 compressed objects within 3 object streams
