@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  10 FEB 2022 18:46
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  10 FEB 2022 20:01
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -816,13 +816,13 @@ Overfull \hbox (13.30779pt too wide) in paragraph at lines 493--498
  []
 
 
-Overfull \hbox (59.94678pt too wide) in paragraph at lines 499--503
+Overfull \hbox (59.94678pt too wide) in paragraph at lines 499--504
 \T1/aer/m/n/9 we rewrite the \T1/aett/m/n/9 ker-nel_thread(...) \T1/aer/m/n/9 f
 unc-tion to call \T1/aett/m/n/9 lib_task_start(...)\T1/aer/m/n/9 ,
  []
 
 
-Overfull \hbox (13.84866pt too wide) in paragraph at lines 499--503
+Overfull \hbox (13.84866pt too wide) in paragraph at lines 499--504
 \T1/aer/m/n/9 which DCE hi-jacks and leads to TaskMan-ager::TaskCurrent(...),
  []
 
@@ -830,27 +830,27 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.577 \end{lstlisting}
-                       [6]
-Overfull \hbox (13.80464pt too wide) in paragraph at lines 597--601
+l.575  
+         extern initcall_entry_t __initcall_start[], __initcall_end[]; [6]
+Overfull \hbox (13.80464pt too wide) in paragraph at lines 604--608
 \T1/aer/m/n/9 parses params us-ing \T1/aett/m/n/9 se-cu-rity_fs_context_parse_p
 aram(...)\T1/aer/m/n/9 ,
  []
 
 
-Overfull \hbox (3.46883pt too wide) in paragraph at lines 629--644
+Overfull \hbox (3.46883pt too wide) in paragraph at lines 636--651
 \T1/aer/m/n/9 sysfs, ramfs, etc. and then mak-ing a call to \T1/aett/m/n/9 init
 _mount_tree\T1/aer/m/n/9 ,
  []
 
 
-Overfull \hbox (14.4522pt too wide) in paragraph at lines 629--644
+Overfull \hbox (14.4522pt too wide) in paragraph at lines 636--651
 \T1/aer/m/n/9 func-tion will then make a cor-re-spond-ing call to \T1/aett/m/n/
 9 vfs_kern_mount\T1/aer/m/n/9 ,
  []
 
 
-Overfull \hbox (8.24945pt too wide) in paragraph at lines 629--644
+Overfull \hbox (8.24945pt too wide) in paragraph at lines 636--651
 \T1/aer/m/n/9 value for it, dur-ing task ini-tial-i-sa-tion in \T1/aett/m/n/9 l
 ib_task_start(...)\T1/aer/m/n/9 . 
  []
@@ -858,33 +858,33 @@ ib_task_start(...)\T1/aer/m/n/9 .
 
 LaTeX Font Warning: Font shape `TS1/aer/m/it' undefined
 (Font)              using `TS1/aer/m/n' instead
-(Font)              for symbol `textasteriskcentered' on input line 663.
-
-
-Overfull \hbox (3.48685pt too wide) in paragraph at lines 674--677
-[]\T1/aett/m/n/9 init_mount_tree \T1/aer/m/n/9 , as dis-cussed be-fore, sets up
- a vfs mount,
- []
-
-
-Overfull \hbox (41.23438pt too wide) in paragraph at lines 674--677
-\T1/aer/m/n/9 which would have it's own path. The as-sign-ment, \T1/aett/m/n/9 
-init_task.nsproxy-
- []
+(Font)              for symbol `textasteriskcentered' on input line 670.
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.677 
-       [7]
-Overfull \hbox (48.72424pt too wide) in paragraph at lines 678--684
+l.677  
+        ... [7]
+Overfull \hbox (3.48685pt too wide) in paragraph at lines 681--684
+[]\T1/aett/m/n/9 init_mount_tree \T1/aer/m/n/9 , as dis-cussed be-fore, sets up
+ a vfs mount,
+ []
+
+
+Overfull \hbox (41.23438pt too wide) in paragraph at lines 681--684
+\T1/aer/m/n/9 which would have it's own path. The as-sign-ment, \T1/aett/m/n/9 
+init_task.nsproxy-
+ []
+
+
+Overfull \hbox (48.72424pt too wide) in paragraph at lines 685--691
 []\T1/aer/m/n/9 Whenever we cre-ate a \T1/aett/m/n/9 ker-nel_thread(..) \T1/aer
 /m/n/9 it calls \T1/aett/m/n/9 copy_process(...)
  []
 
 
-Overfull \hbox (1.1199pt too wide) in paragraph at lines 701--705
+Overfull \hbox (1.1199pt too wide) in paragraph at lines 708--712
 \T1/aer/m/n/9 length, and de-struc-tors, along with a \T1/aett/m/n/9 reg-is-ter
 _netdev(...)
  []
@@ -893,29 +893,29 @@ _netdev(...)
 fier (name{page.}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.743 \end{document}
+l.750 \end{document}
                      [8]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 743.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 743.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 750.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 750.
  (./revitalizing-dce.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 743.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 743.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 750.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 750.
 Package rerunfilecheck Info: File `revitalizing-dce.out' has not changed.
 (rerunfilecheck)             Checksum: 5FE4B87151B7E6A9751C328ACD363D7E;2101.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 743.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 750.
  ) 
 Here is how much of TeX's memory you used:
- 18914 strings out of 483183
- 340980 string characters out of 5966292
- 884207 words of memory out of 5000000
- 33426 multiletter control sequences out of 15000+600000
+ 18915 strings out of 483183
+ 340993 string characters out of 5966292
+ 901263 words of memory out of 5000000
+ 33427 multiletter control sequences out of 15000+600000
  579817 words of font info for 80 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,11n,60p,475b,1410s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 60i,11n,60p,475b,1857s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc} </home/parth/.tex
 live2019/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0900.600pk></usr/share/texli
 ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmb10.pfb></usr/share/texlive/texm
@@ -928,10 +928,10 @@ fonts/cm/cmtt9.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb
 /share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/
 texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/font
 s/type1/urw/times/utmri8a.pfb>
-Output written on revitalizing-dce.pdf (8 pages, 206329 bytes).
+Output written on revitalizing-dce.pdf (8 pages, 207227 bytes).
 PDF statistics:
- 316 PDF objects out of 1000 (max. 8388607)
- 291 compressed objects within 3 object streams
+ 317 PDF objects out of 1000 (max. 8388607)
+ 292 compressed objects within 3 object streams
  113 named destinations out of 1000 (max. 500000)
  253 words of extra memory for PDF output out of 10000 (max. 10000000)
 

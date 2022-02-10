@@ -496,7 +496,8 @@ the kernel scheduler, but instead forks a kernel thread in such a way that the D
 TaskManager::TaskWait(...)  is called on a particular task, DCE can put the current job to sleep, and give the other tasks/fibers a chance to 
 execute their set of functions. 
 
-Therefore, to take  control over the kernel thread creation, we rewrite the \texttt{kernel\_thread(...)} function to call \texttt{lib\_task\_start(...)}, which calls the 
+Therefore, to take  control over the kernel thread creation, we rewrite the \texttt{kernel\_thread(...)} function to call 
+\texttt{lib\_task\_start(...)}, which calls the 
 internal TaskManager::Start(...) to create a DCE task, fills up the task\_struct, sets the SimTask context with the task\_struct and returns back 
 the process ID (pid) of the task. Also, \texttt{current}, as previously referred to above, is not a variable, but a macro, which calls \texttt{get\_current(...)}, which DCE hijacks and leads to TaskManager::TaskCurrent(...), which checks if the current task has a SimTask context. If it does, it returns it back. 
 If it does not, it calls TaskManager::Start(...) to set it up.
@@ -550,20 +551,25 @@ in a special .initcall.init section of the final linked library. These are then 
 In the \texttt{lib\_init} function, I call specific init functions, namely : 
 
 \begin{itemize}
-\item vfs\_caches\_init\_early
 \item rcu\_init
-\item devices\_init 
+\item devices\_init
 \item buses\_init
-\item radix\_tree\_init
-\item timekeeping\_init
-\item cred\_init
-\item uts\_ns\_init 
-\item vfs\_caches\_init 
-\item seq\_file\_init 
-\item proc\_root\_init
+\item radix\_tree\_init 
+\item timekeeping\_init 
+\item vfs\_caches\_init \
+\item New Init Calls :
+\begin{itemize}
+  \item vfs\_caches\_init\_early : To allow mounting of file systems such as \texttt{/proc} and file operations, which require the linked lists for 
+  dcache(Directory Entry Cache, which helps fast lookup of recent paths) and inode.
+  \item cred\_init : Steps up the \texttt{creds\_jar} cache which is required by the LSM \hyperref[Section_LSM]{3.4.7}, fs module and 
+  while creds initialization for kernel task creation.
+  \item proc\_root\_init : Sets up the \texttt{/proc} filesystem root cache, symlinks for mounts, net namespace for proc, and required directories.
+\end{itemize}
 \end{itemize}
 
-I also changed the initcall invocation loop of lib\_init to this : 
+I also changed the initcall invocation loop of lib\_init to use \texttt{initcall\_from\_entry} instead of a direct function call. 
+This invocation function does a safe offset based function address lookup and calls the init method accordingly: 
+
 \begin{lstlisting}[style=CStyle] 
    initcall_entry_t *call;
    extern initcall_entry_t __initcall_start[], __initcall_end[];
@@ -576,7 +582,8 @@ I also changed the initcall invocation loop of lib\_init to this :
 
 \end{lstlisting}
 
-Before we call all the init functions, I also added these two lines of code :
+Before we call all the init functions, I also initialized the \texttt{files} and \texttt{fs} cache pointers for cache based memory 
+allocation using \texttt{kmem} in file operation methods:
 
 \begin{lstlisting}[style=CStyle]
    files_cachep = kmem_cache_create("files_cache",
@@ -593,7 +600,7 @@ Before we call all the init functions, I also added these two lines of code :
 These caches are required while setting up the \texttt{fs\_struct} and \texttt{files\_struct} for each new task in its corresponding \texttt{task\_struct}. Please see [5.9].
 
 
-\subsubsection{Security LSM Module}
+\subsubsection{Security LSM Module}\label{Section_LSM}
 In previous releases of net-next-nuse, we did not need to link the LSM into the net-next-nuse final library build, but in newer Linux releases 
 \texttt{vfs\_kern\_mount(...)} validates and parses params using \texttt{security\_fs\_context\_parse\_param(...)}, which checks if the requested operation was blocked
 in the LSM tables. If this module is not enabled, it would return back ENOPARAM by default and fail. This makes it important for us to link the LSM, and setup our 
