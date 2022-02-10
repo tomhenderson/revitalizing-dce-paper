@@ -151,16 +151,19 @@ Thomas R. Henderson\\
 \maketitle
 \begin{abstract}
 %  * What was done? 
-This paper describes the design, implementation and validation
-of the ns-3 model of the Licklider Transmission Protocol, the standard
-transport protocol used to provide transmission reliability in Delay Tolerant Networks (DTNs).
+This paper reports on significant updates that were made to Direct Code Execution to adapt it to the evolution of application execution environments on Linux Systems 
+and the standard libc library. An attempt to update the Linux Kernel backend which support the Linux network stack on custom simulation scripts through the 
+net-next-nuse interface as a shared library, was made, implementation details and design decisions for which have been documented in this paper.
+Finally, a docker based environment was worked on to ease the installation and usage of Direct Code Exection on Linux 
+Systems, expanding the domain of Linux distributions supported by DCE also simplyfying the process of releasing new and maintaining old versions by the maintainers 
+and upgrading for new users.
 %  * Why do it? 
-DTNs are an emerging field whose principles are used to provide communications 
-in extreme and performance-challenged environments, such as spacrecraft,underwater, or
-disaster response scenarios. Evaluation of such environments requires the use of simulation tools.
-As of now, there is a lack of precise simulation models of these protocols, and concretely within the ns-3 simulator.
+The newer Linux distributions introduced security features in it's standard system libc which restricted the major architecture and workflow of DCE. The network stack 
+which was being used in DCE included a NUSE port on top of Linux Kernel 4.4.0, which has fallen out of date, so a later Linux kernel had to be ported into the 
+net-next-nuse architecture.
 %  * What were the results?
-The ns-3 model presented in this paper accurately models the LTP protocol and offers ...
+Direct Code Execution now supports execution on newer Ubuntu based distributions and all distributions which support Docker can now use DCE with minimal build steps 
+and dependency installations. Linux Kernel 5.10.0 backed net-next-nuse-5.10 can now run Ipv4 applications on custom DCE simulation scripts.
 \end{abstract}
 
 % A category with the (minimum) three required fields
@@ -591,6 +594,11 @@ These caches are required while setting up the \texttt{fs\_struct} and \texttt{f
 
 
 \subsubsection{Security LSM Module}
+In previous releases of net-next-nuse, we did not need to link the LSM into the net-next-nuse final library build, but in newer Linux releases 
+\texttt{vfs\_kern\_mount(...)} validates and parses params using \texttt{security\_fs\_context\_parse\_param(...)}, which checks if the requested operation was blocked
+in the LSM tables. If this module is not enabled, it would return back ENOPARAM by default and fail. This makes it important for us to link the LSM, and setup our 
+build/linking scipts accordingly.
+
 The security module of the Linux kernel depends on a special configuration called the \texttt{CONFIG\_LSM}. The LSM module requires a few architecture
 defined variables. Surprisingly, one cannot find them in the source code (.c or .h files) anywhere; rather, they are placed in a specific section
 of the library/binary called .init.data section, through assembly code. net-next-nuse makes use of a linker script which can help us position variables inside
@@ -606,10 +614,14 @@ the library under specific sections. I had to put this code in the linker.lds to
 		__end_early_lsm_info = .;
   }
 \end{lstlisting}
-\texttt{vfs\_kern\_mount(...)} validates and parses params using \texttt{security\_fs\_context\_parse\_param(...)}, which checks if the requested operation was blocked
-in the LSM tables. If this module is not enabled, it would return back ENOPARAM by default and fail.
 
 \subsubsection{Kernel code and net-next-nuse alignment}
+When net-next-nuse is loaded as a shared library into DCE and \texttt{lib\_init(...)} is called, it invokes certain kernel methods, which triggers 
+kernel initialization routines which help setup critical components such as the mount namespaces, vfs, kernel threads and tasks, etc. 
+Since Linux kernel 4.4.0, the
+kernel has envolevd a lot in terms of how the kernel gets initialized. The section below discusses certain alignments which had to be made with respect to 
+Linux kernel 5.10 to integrate net-next-nuse's architecture.
+
 In updating net-next-nuse, the \texttt{panic\_on\_taint} symbol had to be removed.  This symbol is exported while linking kernel/panic.c (needed for acknowledging kernel
 runtime errors) and accessing it in kernel/sysctl.c caused errors because it could not find it back. Also, including this symbol was unnecessary because its
 value defaults to zero and never changes during program execution.
@@ -686,9 +698,10 @@ TODO: include/arm changes to files, for example, atomic, barrier, ptrace, user, 
 TODO: Rump kernel header file double include, adding flag to disable linux include
 
 \subsubsection{Native Kernel NetDevices}
-Certain components of ns-3 require the setup of custom NetDevices which require a custom MTU and other flags, such as whether the device should enable multicast, or is a point-to-point device, etc. These flags can be put together, and one can allocate a Linux netdevice struct for each such requirement using
+Certain components of ns-3 require the setup of custom NetDevices which require a custom MTU and other flags, such as whether the device should enable multicast, 
+or is it a point-to-point device, etc. These flags can be put together, and one can allocate a Linux netdevice struct for each such requirement using
 the \texttt{alloc\_netdev(...)}, passing all of the configuration needed for details such as MTU, address length, and destructors, along with a \texttt{register\_netdev(...)} call.
-This returns back a forward declared struct SimDevice which is used as a NetDevice object inside ns-3.
+This returns back a forward declared struct SimDevice which is used as a NetDevice object inside ns-3 which is required by ns-3's core networking modules.
 
 \begin{itemize}
  \item Requests are provided in the form of API functions ...

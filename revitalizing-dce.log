@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  7 FEB 2022 19:55
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.12.6)  10 FEB 2022 18:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -718,11 +718,6 @@ LaTeX Font Info:    Trying to load font information for U+lasy on input line 15
 (/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-Overfull \hbox (5.00298pt too wide) in paragraph at lines 154--165
-\T1/aer/m/n/9 mis-sion re-li-a-bil-ity in De-lay Tol-er-ant Net-works (DTNs). D
-TNs
- []
-
 (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2019/09/10 1.8c listings language file
 )
@@ -730,31 +725,31 @@ File: lstlang1.sty 2019/09/10 1.8c listings language file
 File: lstmisc.sty 2019/09/10 1.8c (Carsten Heinz)
 )
 LaTeX Font Info:    Trying to load font information for TS1+aer on input line 2
-09.
-LaTeX Font Info:    No file TS1aer.fd. on input line 209.
+12.
+LaTeX Font Info:    No file TS1aer.fd. on input line 212.
 
 
 LaTeX Font Warning: Font shape `TS1/aer/m/n' undefined
 (Font)              using `TS1/cmr/m/n' instead
-(Font)              for symbol `textasteriskcentered' on input line 209.
+(Font)              for symbol `textasteriskcentered' on input line 212.
 
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
 ]
-Overfull \hbox (33.76508pt too wide) in paragraph at lines 259--269
+Overfull \hbox (33.76508pt too wide) in paragraph at lines 262--272
 \T1/aer/m/n/9 cur-rently linked ex-e-cutable. When DCE over-flows the \T1/aer/m
 /it/9 _IO_FILE_plus
  []
 
 
-Overfull \hbox (10.08562pt too wide) in paragraph at lines 259--269
+Overfull \hbox (10.08562pt too wide) in paragraph at lines 262--272
 \T1/aer/m/n/9 and over-writes the \T1/aer/m/it/9 _IO_jump_t\T1/aer/m/n/9 , it d
 oes not lie in \T1/aer/m/it/9 li-bio_IO_vtables
  []
 
 
-Overfull \hbox (7.74718pt too wide) in paragraph at lines 291--300
+Overfull \hbox (7.74718pt too wide) in paragraph at lines 294--303
 []\T1/aer/m/n/9 The pro-cess for sup-port-ing por-tions of the Linux or FreeBSD
 
  []
@@ -763,20 +758,15 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.305 
+l.303 
        [2]
 LaTeX Font Info:    Trying to load font information for T1+aett on input line 3
-10.
+13.
  (/usr/share/texlive/texmf-dist/tex/latex/ae/t1aett.fd
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
 )
-Overfull \hbox (1.00465pt too wide) in paragraph at lines 324--326
+Overfull \hbox (1.00465pt too wide) in paragraph at lines 327--329
 []\T1/aer/m/n/9 We con-ducted a com-par-i-son of LKL and Li-bOS ap-proaches
- []
-
-
-Overfull \hbox (3.24585pt too wide) in paragraph at lines 363--370
-\T1/aer/m/n/9 through overid-den sys-tem calls. Since LKL is an architecture-
  []
 
 
@@ -786,46 +776,53 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.370 
-       [3]
+l.366 L
+       KL was designed to be a low-maintenance, Linux-as-a-userspace-library...
+[3]
+Overfull \hbox (3.24585pt too wide) in paragraph at lines 366--373
+\T1/aer/m/n/9 through overid-den sys-tem calls. Since LKL is an architecture-
+ []
+
+
 Underfull \vbox (badness 1558) has occurred while \output is active []
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.429 
-       [4]
-Overfull \hbox (28.3028pt too wide) in paragraph at lines 469--475
+l.427 B
+       ake has a source configuration option named \textit{patch}, which can...
+[4]
+Overfull \hbox (28.3028pt too wide) in paragraph at lines 472--478
 []\T1/aer/m/n/9 When the ker-nel is booted up by net-next-nuse in \T1/aett/m/n/
 9 lib_init(...)\T1/aer/m/n/9 ,
  []
 
 
-Overfull \hbox (5.2348pt too wide) in paragraph at lines 477--489
+Overfull \hbox (5.2348pt too wide) in paragraph at lines 480--492
 \T1/aer/m/n/9 re-ceiv-ing back a proper \T1/aett/m/n/9 task_struct\T1/aer/m/n/9
  , the \T1/aett/m/n/9 ker-nel_clone(...)
- []
-
-
-Overfull \hbox (13.30779pt too wide) in paragraph at lines 490--495
-\T1/aer/m/n/9 sched-uler can see it, and ev-ery time TaskMan-ager::TaskWait(...
-)
  []
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.495 
+l.492 
        [5]
-Overfull \hbox (59.94678pt too wide) in paragraph at lines 496--500
+Overfull \hbox (13.30779pt too wide) in paragraph at lines 493--498
+\T1/aer/m/n/9 sched-uler can see it, and ev-ery time TaskMan-ager::TaskWait(...
+)
+ []
+
+
+Overfull \hbox (59.94678pt too wide) in paragraph at lines 499--503
 \T1/aer/m/n/9 we rewrite the \T1/aett/m/n/9 ker-nel_thread(...) \T1/aer/m/n/9 f
 unc-tion to call \T1/aett/m/n/9 lib_task_start(...)\T1/aer/m/n/9 ,
  []
 
 
-Overfull \hbox (13.84866pt too wide) in paragraph at lines 496--500
+Overfull \hbox (13.84866pt too wide) in paragraph at lines 499--503
 \T1/aer/m/n/9 which DCE hi-jacks and leads to TaskMan-ager::TaskCurrent(...),
  []
 
@@ -833,26 +830,27 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.585  
-                 sizeof(struct fs_struct), 0, [6]
-Overfull \hbox (4.79387pt too wide) in paragraph at lines 609--611
-\T1/aer/m/n/9 this mod-ule is not en-abled, it would re-turn back ENOPARAM
+l.577 \end{lstlisting}
+                       [6]
+Overfull \hbox (13.80464pt too wide) in paragraph at lines 597--601
+\T1/aer/m/n/9 parses params us-ing \T1/aett/m/n/9 se-cu-rity_fs_context_parse_p
+aram(...)\T1/aer/m/n/9 ,
  []
 
 
-Overfull \hbox (3.46883pt too wide) in paragraph at lines 617--632
+Overfull \hbox (3.46883pt too wide) in paragraph at lines 629--644
 \T1/aer/m/n/9 sysfs, ramfs, etc. and then mak-ing a call to \T1/aett/m/n/9 init
 _mount_tree\T1/aer/m/n/9 ,
  []
 
 
-Overfull \hbox (14.4522pt too wide) in paragraph at lines 617--632
+Overfull \hbox (14.4522pt too wide) in paragraph at lines 629--644
 \T1/aer/m/n/9 func-tion will then make a cor-re-spond-ing call to \T1/aett/m/n/
 9 vfs_kern_mount\T1/aer/m/n/9 ,
  []
 
 
-Overfull \hbox (8.24945pt too wide) in paragraph at lines 617--632
+Overfull \hbox (8.24945pt too wide) in paragraph at lines 629--644
 \T1/aer/m/n/9 value for it, dur-ing task ini-tial-i-sa-tion in \T1/aett/m/n/9 l
 ib_task_start(...)\T1/aer/m/n/9 . 
  []
@@ -860,33 +858,33 @@ ib_task_start(...)\T1/aer/m/n/9 .
 
 LaTeX Font Warning: Font shape `TS1/aer/m/it' undefined
 (Font)              using `TS1/aer/m/n' instead
-(Font)              for symbol `textasteriskcentered' on input line 651.
+(Font)              for symbol `textasteriskcentered' on input line 663.
 
 
-Overfull \hbox (3.48685pt too wide) in paragraph at lines 662--665
+Overfull \hbox (3.48685pt too wide) in paragraph at lines 674--677
 []\T1/aett/m/n/9 init_mount_tree \T1/aer/m/n/9 , as dis-cussed be-fore, sets up
  a vfs mount,
  []
 
 
-Overfull \hbox (41.23438pt too wide) in paragraph at lines 662--665
+Overfull \hbox (41.23438pt too wide) in paragraph at lines 674--677
 \T1/aer/m/n/9 which would have it's own path. The as-sign-ment, \T1/aett/m/n/9 
 init_task.nsproxy-
- []
-
-
-Overfull \hbox (48.72424pt too wide) in paragraph at lines 666--672
-[]\T1/aer/m/n/9 Whenever we cre-ate a \T1/aett/m/n/9 ker-nel_thread(..) \T1/aer
-/m/n/9 it calls \T1/aett/m/n/9 copy_process(...)
  []
 
 pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.683 
+l.677 
        [7]
-Overfull \hbox (1.1199pt too wide) in paragraph at lines 689--692
+Overfull \hbox (48.72424pt too wide) in paragraph at lines 678--684
+[]\T1/aer/m/n/9 Whenever we cre-ate a \T1/aett/m/n/9 ker-nel_thread(..) \T1/aer
+/m/n/9 it calls \T1/aett/m/n/9 copy_process(...)
+ []
+
+
+Overfull \hbox (1.1199pt too wide) in paragraph at lines 701--705
 \T1/aer/m/n/9 length, and de-struc-tors, along with a \T1/aett/m/n/9 reg-is-ter
 _netdev(...)
  []
@@ -895,29 +893,29 @@ _netdev(...)
 fier (name{page.}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.730 \end{document}
+l.743 \end{document}
                      [8]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 730.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 730.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 743.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 743.
  (./revitalizing-dce.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 730.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 730.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 743.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 743.
 Package rerunfilecheck Info: File `revitalizing-dce.out' has not changed.
 (rerunfilecheck)             Checksum: 5FE4B87151B7E6A9751C328ACD363D7E;2101.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 730.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 743.
  ) 
 Here is how much of TeX's memory you used:
  18914 strings out of 483183
  340980 string characters out of 5966292
- 842532 words of memory out of 5000000
+ 884207 words of memory out of 5000000
  33426 multiletter control sequences out of 15000+600000
  579817 words of font info for 80 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,11n,60p,475b,1863s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 60i,11n,60p,475b,1410s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc} </home/parth/.tex
 live2019/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0900.600pk></usr/share/texli
 ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmb10.pfb></usr/share/texlive/texm
@@ -930,7 +928,7 @@ fonts/cm/cmtt9.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb
 /share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/
 texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/font
 s/type1/urw/times/utmri8a.pfb>
-Output written on revitalizing-dce.pdf (8 pages, 204701 bytes).
+Output written on revitalizing-dce.pdf (8 pages, 206329 bytes).
 PDF statistics:
  316 PDF objects out of 1000 (max. 8388607)
  291 compressed objects within 3 object streams
