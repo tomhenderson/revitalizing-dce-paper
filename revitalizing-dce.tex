@@ -185,6 +185,14 @@ and dependency installations. Linux Kernel 5.10.0 backed net-next-nuse-5.10 can 
 % https://www.theregister.com/2020/01/06/linux_2020_kernel_systemd_code/
 % estimated 27.8 million lines of code with 75,000-80,000 commits per year.
 
+\begin{figure*}[h!]
+  \centering
+    \includegraphics[width=0.95\textwidth]{figs/architecture.png}
+
+  \caption{DCE architecture (redrawn from Figure 1 of \cite{Tazaki13}) with recent extensions highlighted}
+  \label{fig:architecture}
+\end{figure*}
+
 The rest of this paper is organized as follows: Section 2 provides an overview on the technical challenges due to Linux evolution.
 Section 3 describes solutions.
 Section 4 presents the results.  Section 5 related work.  Section 6 conclusions
@@ -715,13 +723,28 @@ This returns back a forward declared struct SimDevice which is used as a NetDevi
  \item Notifications are provided as callback functions ...
 \end{itemize}
 
-\section{Results}
+\section{Performance Evaluation}
 
-\subsection{Docker vs Native DCE Simulation Tests}
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.47\textwidth]{figs/topology.png}
+  \caption{Simulation topology (redrawn from Figure 2 of \cite{Tazaki13})}
+  \label{fig:topology}
+\end{figure}
 
-\subsection{Performance : DCE vs. ns-3}
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.47\textwidth]{figs/hops-vs-pps.png}
+  \caption{Packet processing performance as a function of number of network hops}
+  \label{fig:hops-vs-pps}
+\end{figure}
 
-\subsection{Google BBR v1 Validation Results}
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.47\textwidth]{figs/rate-vs-time.png}
+  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations}
+  \label{fig:rate-vs-time}
+\end{figure}
 
 \section{Related Work}
 
@@ -735,7 +758,7 @@ This returns back a forward declared struct SimDevice which is used as a NetDevi
 % initial runs of your .tex file to
 % produce the bibliography for the citations in your paper.
 \bibliographystyle{abbrv}
-\bibliography{ltp-ns-3-workshop}  % sigproc.bib is the name of the Bibliography in this case
+\bibliography{revitalizing-dce}  % sigproc.bib is the name of the Bibliography in this case
 % You must have a proper ".bib" file
 %  and remember to run:
 % latex bibtex latex latex
