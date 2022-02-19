@@ -71,7 +71,7 @@ f6.close()
 f7 = open("rate-vs-time.dce12.4.4.dat")
 rate7 = []
 clock7 = []
-for line in f4:
+for line in f7:
     if not line.startswith('#'):
         columns = line.split()
         rate7.append(float(columns[2]))
@@ -83,10 +83,10 @@ plt.ylabel('Wall clock time (s)')
 #plt.xlim([20,20.5])
 #plt.title(title, fontdict = {'fontsize' : 12})
 plt.axhline(y=100, color='black', linestyle='--')
-plt.plot(rate4, clock4, marker='x', color='red', label='DCE-1.12')
-plt.plot(rate7, clock7, marker='v', color='orange', label='DCE-1.12 kernel 4.4')
+plt.plot(rate5, clock5, marker='v', color='orange', label='DCE-1.12 kernel 5.10 Docker')
 plt.plot(rate6, clock6, marker='^', color='purple', label='DCE-1.12 kernel 5.10')
-plt.plot(rate5, clock5, marker='+', color='black', label='DCE-1.12 kernel 5.10 Docker')
+plt.plot(rate7, clock7, marker='x', color='red', label='DCE-1.12 kernel 4.4')
+plt.plot(rate4, clock4, marker='+', color='black', label='DCE-1.12 user')
 #plt.plot(rate2, clock2, marker='*', color='green', label='Tazaki [1]')
 plt.plot(rate3, clock3, marker='o', color='blue', label='ns-3')
 plt.legend(loc='upper left')
