@@ -769,6 +769,11 @@ This returns back a forward declared struct SimDevice which is used as a NetDevi
 \end{itemize}
 
 \section{Performance Evaluation}
+We describe some performance evaluations of the DCE code, following the
+approach described in \cite{Tazaki13}.  The purpose of this section is to
+compare the runtime performance of different versions of DCE and different
+DCE configurations with the performance reported in \cite{Tazaki13} and with
+a equivalent ns-3 (without DCE) simulation.
 
 \begin{figure}[h!]
   \centering
@@ -777,6 +782,55 @@ This returns back a forward declared struct SimDevice which is used as a NetDevi
   \label{fig:topology}
 \end{figure}
 
+The simulation topology used is shown in Figure \ref{fig:topology}, which
+is duplicated from Figure 2 of \cite{Tazaki13}.  The topology is a simple
+linear network with a variable number of hops, and a single UDP flow
+is sent from client to server for the duration of the simulation.
+The UDP data rate is configurable between 5 and 100 Mbps, and the UDP
+payload size was a uniform 1470 bytes per packet.
+To avoid per-hop congestion, link bandwidths are set to 1 Gbps.
+For the purpose of runtime performance comparison, this topology is
+suitable because it makes use of a DCE application (a custom UDP traffic
+generator (\emph{udp-perf}) written in C and maintained as part of DCE),
+and allows the enabling or disabling of kernel-mode operation.  Most
+simulation operations involve the creation and transmission of packets.
+The program to realize this topology is found as an example named
+\emph{dce-udp-perf.cc} in the DCE codebase; we only had to make minor
+updates to that program to realize the different configurations reported
+herein, and we believe that this is the program originally used
+in \cite{Tazaki13}.
+
+We do not know what version of DCE was used in \cite{Tazaki13} but we
+have reason to believe that it was not significantly different from the
+most recent DCE 1.11 release of DCE (for Ubuntu 16.04), because there
+has not been much development of DCE since the publication of \cite{Tazaki13}.
+The new software we are reporting on herein (for Ubuntu 20.04, with newer
+kernel code, and optionally with Docker) will be part of DCE 1.12 and
+later releases.
+
+ns-3 and DCE software can be compiled in debug or optimized mode.  For
+these experiments, we compiled both ns-3 and DCE in optimized mode.  All
+other software (e.g. net-next-nuse-4.4.0, glibc-2.31) was compiled in
+the default mode specified for that software.
+
+For the experiments, we used two different machines (for the two different
+operating systems).  As DCE execution time is dominated by the single thread
+CPU performance of a machine, execution of the same program on different CPUs
+will lead to
+different runtimes.  In \cite{Tazaki13}, an Intel Xeon 2.8 GHz machine was
+used; this CPU is rated with a single thread performance of 384 by PassMark
+Software's online CPU benchmark dataset\footnote{https://www.cpubenchmark.net}.
+We used an Intel Core i7-4770 3.40 GHz machine for tests of DCE version 1.11
+on Ubuntu 16.  This CPU has a single thread benchmark of 2167 according
+to the same database.  For tests of DCE version 1.12 (Ubuntu 20.04), we used
+a machine with an Intel Core i7-1065G7 1.30 GHz CPU.  This CPU has a
+single thread benchmark of 2416 according to the same database.  Use of
+different machines for the two different operating systems makes it difficult
+to directly compare the DCE performance results, but because we are able to
+run the same ns-3 simulation on both machines, we can calibrate the
+performance by referencing DCE performance results in relation to the
+corresponding ns-3 runtimes on each machine.
+
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.47\textwidth]{figs/hops-vs-pps.png}
@@ -784,20 +838,123 @@ This returns back a forward declared struct SimDevice which is used as a NetDevi
   \label{fig:hops-vs-pps}
 \end{figure}
 
+Figure \ref{fig:hops-vs-pps} reproduces data from a similar figure (Figure 3)
+in \cite{Tazaki13}, and provides some new data for current simulation runs.
+In \cite{Tazaki13}, this figure was used to compare performance between
+DCE and Mininet-HiFi.  Here, we compare the previous data on DCE from
+\cite{Tazaki13} (read from the paper figure) with a similar experiment run
+with DCE version 1.11 on Ubuntu 16.  A single simulation trial for different
+values of network hops (4, 8, 16, 24, 48, 64) was run for 50 simulated
+seconds, and the number of received packets was divided by the elapsed
+wall clock time of each trial, to yield a packets-per-second measurement.
+This experiment illustrates that the most recent release of DCE code has a
+similar performance profile as that of \cite{Tazaki13}.  Because the
+number of packets sent in each simulation is the same, the downward
+slope of the curves as the number of hops increases indicates that larger
+topologies (which cause more simulation events to be generated per packet)
+will run more slowly.  We also note that an unexpected result of this
+experiment was that the two curves would generally overlap, since the
+simulations were conducted on machines with different CPU performance.
+This could indicate a performance regression between the version of DCE
+used in \cite{Tazaki13} and the most recent release; performance regression
+has not been tracked as part of DCE maintenance.
+
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.47\textwidth]{figs/rate-vs-time.png}
-  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations}
+  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 16)}
   \label{fig:rate-vs-time}
 \end{figure}
+
+Figure \ref{fig:rate-vs-time} recreates a similar experiment 
+(shown in Figure 5 of \cite{Tazaki13}) to highlight the impact of sending
+rate on the wall clock time of the simulation trial, for different sending
+rates on a four-hop topology.  As in \cite{Tazaki13}, a linear relationship
+between the sending rate and wall clock time is expected, because the
+number of hops per packet is held constant.  Again, we reproduce the
+curve from \cite{Tazaki13} by reading their data from the paper figure.
+There are several interesting observations.  First, we believe that the
+closest comparison between the experiment from \cite{Tazaki13} is the
+\emph{DCE 1.11 ELF} result.  This configuration used DCE with Linux kernel
+version 4.4.0 and the ELF loader (known to lead to faster simulation
+runs than the default Cooja loader).  Despite executing on a much faster
+machine, the DCE 1.11 result is slower than the earlier reported simulation.
+Again, we do not have specific information on how the previous run
+was conducted (the website hosting the scripts is no longer active), and
+it could possibly be due to performance regressions either with DCE
+or with the Linux kernel library (\cite{Tazaki13} used a virtualized kernel
+version of 2.6.36).  Aside from this difference, this figure can be used
+to compare the execution time performance of different modes of DCE.
+For comparison, we added a mode of operation to \emph{dce-udp-perf.cc} to
+bypass the use of the \emph{udp-perf} DCE application and to use the
+ns-3 UDP client application.  The blue line (bottom) is therefore a pure
+ns-3 simulation, and runs fastest.  The next fastest execution is found
+with \emph{DCE 1.11 ELF user}, which is using the ELF loader with DCE
+running in user-mode, not kernel-mode.  This means that the DCE application
+is using the ns-3 TCP/IP stack rather than the Linux kernel stack.  The
+next fastest configuration is the \emph{DCE 1.11 ELF} configuration, using
+DCE user-space and kernel code over the ns-3 simulated point-to-point links.
+The final curve is the \emph{DCE 1.11} curve that uses the DCE user-space
+and kernel code but with the default Cooja loader.  This curve shows that
+the use of the ELF loader conveys a significant performance benefit.
+While the Figure 5 of \cite{Tazaki13} includes plots for other network
+diameters (up to 32 hops), we omit the larger topologies in our figure
+for clarity; the larger topologies display similar linear relationships.
+The horizontal dashed line depicted shows the performance point at which
+the simulation time equals the wall clock time; only the DCE 1.11 curve
+for data rates greater than 60 Mbps ran more slowly than real time in
+these experiments.
+
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=0.47\textwidth]{figs/rate-vs-time-dce12.png}
+  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 20)}
+  \label{fig:rate-vs-time-u20}
+\end{figure}
+
+Figure \ref{fig:rate-vs-time-u20} presents comparable simulation results
+for the new version of DCE (the pending 1.12 and later releases).  As noted
+above, the machine for these experiments had a faster CPU, and in comparing
+the pure ns-3 results between both machines, the simulation runs on this
+machine were about 25\% faster (although the ns-3 versions were different,
+ns-3.34 on DCE 1.11 and ns-3.35 on DCE 1.12, this is not expected to
+lead to any notable difference in performance).  The next curve above
+the ns-3 curve, \emph{DCE-1.12 user}, can be compared with the
+\emph{DCE-1.11 ELF user} in the previous figure.  In Ubuntu 20.04, the
+ELF loader is not yet working, so the comparison is not exact, but the
+experiment shows that despite the lack of ELF loader, use of the ns-3
+stack in both cases leads to faster than real-time execution.
+
+Next, compare the red curves, \emph{DCE-1.11} vs. \emph{DCE-1.12 kernel 4.4}.
+Neither configuration used the ELF loader, and both used the same Linux
+kernel library version (4.4).  However, the DCE-1.12 version uses the
+modified glibc library.  The newer DCE version results in 75\% more runtime
+despite being on the faster machine.  
+
+The final two curves illustrate performance differences between the current
+kernel library version 4.4 and a new kernel library (5.10), and the
+difference between running DCE natively on the host operating system vs.
+running within a Docker container.  The newer kernel library required
+about 16\% more runtime.   Running within a Docker container was observed
+to incur only about a 3\% performance hit.
+
+As of this writing, the performance differences between the newer DCE 1.12
+versions and the last released (DCE 1.11) versions have not been debugged
+or profiled; the differences were discovered during the course of preparing
+this paper.  The small performance cost of running within a Docker container,
+however, may be worth the convenience to future users.
 
 \section{Related Work}
 
 \section{Conclusions}
 %\end{document}  % This is where a 'short' article might terminate
 
+\textcolor{red}{One conclusion to add is that it appears that performance regressions
+can easily occur and that DCE should be regularly profiled.}
+
 %ACKNOWLEDGMENTS are optional
 \section{Acknowledgments}
+This project was funded by the 2021 Google Summer of Code.
 %
 % The following two commands are all you need in the
 % initial runs of your .tex file to
