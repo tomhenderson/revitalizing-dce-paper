@@ -204,7 +204,7 @@ and future work.
 
 \subsection{libio vtable mangling}
 DCE requires to map FILE operations to it's internal custom handlers which work in synchronization with ns-3. DCE supports different operations on a FILE 
-through a Unix file abstraction, which requires all FILE operation calls to be mapped through it. The requires us to modify the vtable entries for the FILE
+through a Unix file abstraction, which requires all FILE operation calls to be mapped through it. This requires us to modify the vtable entries for the FILE
 object accordingly.
 
 The vtable is a table maintaining references to functions called for virtual functions defined for a class or an entity. These functions can 
@@ -231,17 +231,7 @@ By nature of the implementation of the kernel's memory allocation processes, the
 This can be verified by the \textit{sizeof} operation of C showing that the sum of sizes of the individual members of a struct is equal to the size of
 the struct object. Similarly, the FILE and the \textit{\_IO\_jump\_t} objects are allocated in contiguous memory locations. Specifically, the 
 \textit{\_IO\_jump\_t} areas is interesting to DCE, as it defines the callbacks or reference pointers to the functions handlers for each supported file 
-operation. Some of the callbacks which are interesting to DCE and its use cases are highlighed below.
-
-\begin{multicols}{2}
-\begin{itemize}
-  \item \texttt{read}
-  \item \texttt{close}
-  \item \texttt{seek}
-  \item \texttt{write}
-  \item \texttt{stat}
-\end{itemize}
-\end{multicols}
+operation. Some of the callbacks which are interesting to DCE are \texttt{read}, \texttt{close}, \texttt{seek}, \texttt{write} and \texttt{stat}.
 
 This structure acts like the vtable for the FILE structure, but it does not behave like the oridinary vtable seen when working with virtual functions 
 and derived classes, which are dynamic and supports run time bindings. This vtable is instead expected to behave as a statically bound vtable.  There exist 
@@ -264,11 +254,7 @@ control over stream operations, which can now be routed through and and to behav
 descriptor that is defined.  Although this control over FILE streams
 to regulate stream buffer flushing and data redirection is productive for
 DCE, these techniques can also be used maliciously for
-\textit{buffer overflow attacks}, as it lets penetration 
-testers to make use of tools like pwntools etc. to gain control over application execution and important run time CPU register values such as the 
-\textit{rip} which is used for the relative addressing of application components(which is also how position-independent-executables work), which is more 
-secure as compared to static addressing, where fixed address values of symbols and pointers could be gained by static analysis tools for run 
-time application exploitations.
+\textit{buffer overflow attacks}.
 
 \sloppy Post libc-2.25, security features have been implemented to glibc to identify 
 and block buffer overflow attacks on the FILE object. Whenever any FILE
@@ -318,20 +304,12 @@ and rerouting them through nuse and kernel defined routines.
 We conducted a comparison of LKL and LibOS approaches according to different design parameters and considerations for a complex application framework such as
 DCE with very specific demands from it's underying network stack.
 
-\paragraph{Linux Kernel Support}
-LKL, which was primarily designed to work as a Linux-as-userspace-library interface for applications to be dynamically linked to at runtime, is built on top of 
-Linux 5.2. The kernel port design of LKL facilitates kernel version upgrades with little to no effort. Abstractly, the kernel upgrade process 
-would permit a git rebase on the kernel version the user would want to use, and the project should compile with no major issues to deal with (some minor compiler, 
-and Linux kernel header definition changes might come up, which should be resolvable with a bit of effort).
-
-LibOS, which makes use of dynamic, selective Linux kernel linking, bridges the gap between application workspace and Linux kernel networking stack with
-the help of glue code, kernel component connector code, and user application provided exported functions and callbacks for proper execution. This
-architecture required LibOS to modify some of the internal Linux kernel files for additional components such as the slab memory allocator, which requires 
-LibOS to setup preprocessor directives to select a slab allocator for specific Kconfig-defined compiler directives, to pass on control to LibOS routines 
-whenever required. Currently, LibOS supports Linux kernel version 4.4.0. Upgrading to a newer Linux kernel version might be an intense process requiring one 
-to deal with issues from header file changes, to complete changes in kernel components like the networking layer, memory maqnagement, namespace manager 
-and kernel boot process.
-
+\paragraph{Linux feature support \& Maintenance}
+On comparing LKL with LibOS, on the ease of entending support for Linux features which are compiled into the shared library port and 
+can be used through the API, LKL seems to win here, as adding support for new features in later kernels can be as easy as a git rebase, as not kernel internal code  
+is manipulated and also the Kernel is built using minimal changes to the original Linux build steps. net-next-nuse on the other hand, would require selective Linux 
+kernel linking, bridges the gap between application workspace and Linux kernel networking stack with the help of glue code, kernel component connector code, and user 
+application provided exported functions and callbacks for proper execution, which increases maintenance cost.
 
 \paragraph{Library kernel boot order and scheduling}
 Both LKL and LibOS differ form each other on how it initializes the kernel and schedules tasks, which also determines many execution factors of DCE. 
@@ -346,11 +324,11 @@ scheduling algorithm and specific ns-3 task context switch paradigms that are di
 making it wait for LKL's internal Linux kernel opertions to finish, before it can schedule other ns-3 lightweight
 threads.  The net result of this tension is to cause simulation result to differ from real world observations.
 
-LibOS does not depend on the actual \texttt{start\_kernel}. It makes 
-use of its own \texttt{lib\_init} fuction which calls specific setups calls required by the network stack of the kernel to 
-work, such as proc, VFS, ramfs, scheduler, etc. It also overrides scheduler member functions, syncing it with ns-3's 
+LibOS makes 
+use of its own \texttt{lib\_init} fuction which calls specific setups calls required to initialize the kernel.
+It also overrides scheduler member functions, syncing it with ns-3's 
 scheduler. LibOS creates an ns-3 task copy for each kernel task which is created by the \texttt{copy\_process}, \texttt{create\_process},
-etc. kernel functions. Each such task maps with itself a callback function which should be called once the wait time
+etc. Each such task maps with itself a callback function which should be called once the wait time
 for a task is over, or has been invoked as a part of a regular scheduling process. Once tasks are processed, they are 
 also popped off the ns-3 task queue.
 
@@ -399,18 +377,14 @@ DCE without any issues.
 
 
 \subsection{Docker environnment for DCE}
-Docker is one of the predominant tool used for software deployments considering the low host system dependence, flexibility to preconfigure execution 
-applicaition environments and easy container, network and volume orchestration. DCE has a long dependency graph which includes dependencies across 
-system libraries, other projects, Linux kernel and tools, and many other. Bake is a tool which can be used to download the external dependencies 
-which should be built, but a lot of the system libraries and other host specific environment requirements needs to be assured by the end user, which
-can be a trouble as some of the DCE release are supported only on specific Ubuntu machines with a specific libc version being used to avoid symbol 
-missing errors during runtime. In such cases, a lot of the non supported Linux distribution users cannot use the project if they do not have access 
-to a machine with supported specifications. 
+DCE has a long dependency graph which includes dependencies across 
+system libraries, other projects, Linux kernel and tools, host specific requirements, etc. To ease installation process and standardize the process 
+across docker supported Linux distros, a docker based setup is discussed.
 
 
 \begin{figure}[!htb]
   \centering
-    \includegraphics[width=0.37\textwidth]{figs/docker-architecture.jpg}
+    \includegraphics[width=0.30\textwidth]{figs/docker-architecture.jpg}
 
   \caption{DCE docker architecture composition}
   \label{fig:docker}
@@ -420,21 +394,18 @@ to a machine with supported specifications.
 The docker release consists of the above docker network setup which is orchestrated using a Docker Compose script. 
 It consists of the docker container, environemnt variables and Volume. The docker 
 container works on a custom image which uses ubuntu:20.04 as the base image. A docker image is collection of Image Layers. Each image layer is a 
-Dockerfile command which helps create the final docker environemnt for that image. A layer can be a simple apt-get install command which installs 
-system dependencies or libraries, or a local to docker file copy command. The docker image has been optimized to use minimal number of layers and 
+Dockerfile command which adds up to create the final docker environemnt for that image. The docker image has been optimized to use minimal number of layers and 
 all redundant layers are merged together. A layer for installing all system dependencies and libraries ensures all listed and unlisted bake 
 dependencies for building DCE are satisfied. It also has a pre-compiled glibc bundled into the image itself. This helps us reduce the docker 
 image size drastically as compared to the building from source everytime which might consume GBs, but this layer takes up 51.36 MB.
 It also has a default environemnt variable 
 \texttt{DCE\_WITH\_DOCKER=1} which is a flag variable for ns-3-dce waf script to try and execute a docker based build.
 
-The environemnt variables which are fixed by the docker compose script are preset into the docker container when the service is started.
 The container, as dicussed before, comes with a pre-compiled glibc-2.31 and so the user does not need to build the modified glibc again from source.
 The environment variable \texttt{DCE\_WITH\_GLIBC} tells waf where to look for the modified glibc build directory. This environemnt variable can 
 later be changed from inside the docker container to point to a custom glibc build directory if the user wishes to do so. This glibc build is then 
 used by the ns-3-dce waf to compile ns-3-dce. The docker compose also sets up a volume. A docker volume is a mechanism which lets docker containers 
-use persisting data from within the container. When a container is initally started without any attached containers, it is provided a temporary 
-file space to work with, and any changes made during runtime by docker container is not persisted. Docker containers can attach volumes to themselves
+use persisting data from within the container. Docker containers can attach volumes to themselves
 and map specific directories from withing the docker container to the host directory. Any changes made to that directory withing the  docker container
 is visible and persisted on the mapped host directory and also vice-vers. This is a key requirement for us, as ns-3 projects are used by both 
 researchers and users who wish to just simulate scripts and also project maintainers, contributors and testers who need to be able to make changes 
@@ -442,7 +413,7 @@ to the ns-3 code locally using text editors and IDEs, and test it instantly, als
 third party applications. So, we attach a volume which maps the /home/bake directory from within the docker container to the bake directory on 
 the host.
 
-The ns-3-dce waf is also edited accordingly. The waf script supports both docker based build and native builds on the same branch. It selects the glibc 
+The ns-3-dce waf script supports both docker based build and native builds on the same branch. It selects the glibc 
 build directory based on waf configure and local environemnt variables and compiles ns-3-dce on top of it.
 
 \subsection{net-next-nuse-5.10}
@@ -472,8 +443,7 @@ them using DCE imported functions mapped to TaskManager utilities. As a result, 
 \texttt{schedule()} or \texttt{schedule\_timeout()}, and control is passed to DCE to take care of it. 
 
 \subsubsection{Slab Allocator}
-\sloppy When the kernel is booted up by net-next-nuse in \texttt{lib\_init(...)}, it calls some of the required initialization functions (initcalls). 
-Most of these initcalls require the creation of a memory cache object called \texttt{kmem\_cache}. These memory slabs are used to allocate memory to child 
+\sloppy Most of the initcalls require the creation of a memory cache object called \texttt{kmem\_cache}. These memory slabs are used to allocate memory to child 
 objects, using functions like \texttt{kmem\_cache\_alloc(...)} and functions as simple as \texttt{kmalloc(...)} to allocate space for a pointer object. The 
 kernel already has slab allocators (two such allocators are SLUB and SLOB), but all of them allocate space internally, giving no control to DCE. We thus use a custom 
 SLAB allocator called SLIB, which calls internal \texttt{DCE's malloc(...)} functions and sets up \texttt{kmem\_cache} data structures and constructors etc. It also 
@@ -494,37 +464,18 @@ which flags are enabled using a bitwise \texttt{\&} operator and calling the cor
 and \texttt{copy\_cred(...)}.  It also makes a call to \texttt{dup\_task\_struct(...)}, which will bind changes of the current \texttt{task\_struct} to a new one and 
 return it back. After receiving back a proper \texttt{task\_struct}, the \texttt{kernel\_clone(...)} schedules a fork for the newly created task.
 
-\sloppy However, DCE is not a complete architecture-level port and thus lacks a 
-clear definition of \texttt{init\_task}. So, for the very first \texttt{kernel\_thread}, the current task would be \texttt{init\_task}, 
-so not having a proper definition of it creates a domino effect making all subsequent tasks have an incomplete structure, leading to possible segmentation faults.  
-Furthermore, DCE does not use the kernel scheduler, but instead forks a kernel thread in such a way that the DCE scheduler can see it, and every time 
-TaskManager::TaskWait(...)  is called on a particular task, DCE can put the current job to sleep, and give the other tasks/fibers a chance to 
-execute their set of functions. 
-
 \sloppy Therefore, to take  control over the kernel thread creation, we rewrite the \texttt{kernel\_thread(...)} function to call 
 \texttt{lib\_task\_start(...)}, which calls the 
 internal TaskManager::Start(...) to create a DCE task, fills up the task\_struct, sets the SimTask context with the task\_struct and returns back 
 the process ID (pid) of the task. Also, \texttt{current}, as previously referred to above, is not a variable, but a macro, which calls \texttt{get\_current(...)}, which DCE hijacks and leads to TaskManager::TaskCurrent(...), which checks if the current task has a SimTask context. If it does, it returns it back. 
-If it does not, it calls TaskManager::Start(...) to set it up.
+If it does not, it calls TaskManager::Start(...) to set it up and every time 
+TaskManager::TaskWait(...)  is called on a particular task, DCE can put the current job to sleep, and give the other tasks/fibers a chance to 
+execute their set of functions. 
  
-
-\subsubsection{Scheduler Workqueue/Waitqueue Implementation}
-DCE does not compile the 
-original kernel implementation for the scheduler, but rather implements all of the key functions used by the networking stack. 
-To understand the need to do this, lets imagine creating a socket, binding and listening to it and then making an \texttt{accept(...)} call, 
-and the client application doesn’t seem to ever come up. The system would go to a standstill if it did not schedule the client application for it to issue a 
-corresponding \texttt{connect(...)} call. This is one of the issues with LKL [4.2] as it is uniprocessor,
-and is why we avoid linking those files, and 
-rather pass the majority of the control to DCE and it's own scheduler, but without making a single change in DCE code, 
-because DCE also has to work when simulation scripts use the default ns-3 network stack.  
-DCE therefore rewrites all required Linux scheduler functions, which work based on LWP thread notifiers and are synchronized by 
-the DCE Scheduler
-
 \subsubsection{Kernel initialization}
-The kernel initializers are divided into base init functions and roughly eight levels of initcalls, and export a start and end pointer of the list. 
-Init functions are the ones directly called in the \texttt{start\_kernel(...)} or by certain device drivers, whereas initcalls are the ones which are stored 
-in a special .initcall.init section of the final linked library. These are then copied to their respective positions through the linker.lds script.
-In the \texttt{lib\_init} function, we call specific init functions. Some of the new additions made to initcall list are : 
+The kernel initializers are divided into base init functions and roughly eight levels/types of initcalls, and export a start and end pointer of the list of initcall list. 
+The initcalls are stored in a special .initcall.init section of the final linked library, which are then copied to their respective positions through the linker.lds script.
+Some of the new additions made to original initcall list are : 
 
 \begin{itemize}
   \item vfs\_caches\_init\_early : To allow mounting of file systems such as \texttt{/proc} and file operations, which require the linked lists for 
@@ -550,11 +501,10 @@ which checks if the requested operation was blocked in the LSM tables. If this m
 important for us to link the LSM, and setup our build/linking scipts accordingly.
 
 The security module of the Linux kernel depends on a special configuration called the \texttt{CONFIG\_LSM}. The LSM module requires a few architecture
-defined variables. Surprisingly, one cannot find them in the source code (.c or .h files) anywhere; rather, they are placed in a specific section
-of the library/binary called .init.data section, through assembly code. net-next-nuse makes use of a linker script which can help us position variables inside
-the library under specific sections. Below is the code for linker.lds to initialise the start and end of the LSM table during the link phase of the build.
-\begin{lstlisting}[style=CStyle]
-  . = ALIGN(CONSTANT (MAXPAGESIZE));
+defined variables, which are placed in a specific section
+of the library called .init.data section, through linker script. 
+The below code keeps sections \texttt{lsm\_info.init} and \texttt{early\_lsm\_info.init} even if not referenced, and also defines start and end of both.
+\begin{lstlisting}[style=CStyle]  
   .init.data : AT(ADDR(.init.data)) {    
 		__start_lsm_info = .;	
 		KEEP(*(.lsm_info.init))
@@ -599,11 +549,6 @@ Certain components of ns-3 require the setup of custom NetDevices which require 
 or is it a point-to-point device, etc. These flags can be put together, and one can allocate a Linux netdevice struct for each such requirement using
 the \texttt{alloc\_netdev(...)}, passing all of the configuration needed for details such as MTU, address length, and destructors, along with a \texttt{register\_netdev(...)} call.
 This returns back a forward declared struct SimDevice which is used as a NetDevice object inside ns-3 which is required by ns-3's core networking modules.
-
-\begin{itemize}
- \item Requests are provided in the form of API functions ...
- \item Notifications are provided as callback functions ...
-\end{itemize}
 
 \section{Performance Evaluation}
 We describe some performance evaluations of the DCE code, following the
