@@ -281,12 +281,9 @@ DCE requires to map FILE operations to it's internal custom handlers which work 
 through a Unix file abstraction, which requires all FILE operation calls to be mapped through it. This requires us to modify the vtable entries for the FILE
 object accordingly.
 
-The vtable is a table maintaining references to functions called for virtual functions defined for a class or an entity. These functions can 
-be overriden dynamically by user defined functions and the respective call for the corresponding virtual function in a derived class object can be bound 
-to that function at runtime, unlike pre-defined functions which are static, fixed, and can be determined during compile time. The libc on Linux provides
-this highly flexible feature for most user defined classes, but the case with the FILE structure is not the same.
-
-The FILE structure is a library defined structure which defines the overall organization, orientation and properties of any file I/O stream opened
+The vtable is a table maintaining references to functions called for virtual functions defined for a class or an entity and changes dynamically 
+during runtime unlike compile time decisive function calls. The FILE structure is a library defined structure which defines the overall organization, 
+orientation and properties of any file I/O stream opened
 by the host application. It maintains different parameters for storing useful operational fields like the UNIX based file descriptor number of the 
 opened stream, the read/write offsets and buffer addresses of the stream. The pseudoname for the FILE structure as seen inside libc is \textit{\_IO\_FILE}. 
 Since, FILE is a library defined entity, the library provides its own set of implementation for all possible operations on an open FILE stream.
@@ -302,45 +299,42 @@ struct _IO_FILE_plus
 \end{lstlisting}
 
 By nature of the implementation of the kernel's memory allocation processes, the contents of a struct are allocated in contiguous memoory locations. 
-This can be verified by the \textit{sizeof} operation of C showing that the sum of sizes of the individual members of a struct is equal to the size of
-the struct object. Similarly, the FILE and the \textit{\_IO\_jump\_t} objects are allocated in contiguous memory locations. Specifically, the 
+The FILE and the \textit{\_IO\_jump\_t} objects are allocated in contiguous memory locations. Specifically, the 
 \textit{\_IO\_jump\_t} areas is interesting to DCE, as it defines the callbacks or reference pointers to the functions handlers for each supported file 
-operation. Some of the callbacks which are interesting to DCE are \texttt{read}, \texttt{close}, \texttt{seek}, \texttt{write} and \texttt{stat}.
+operations such as , texttt{read}, \texttt{close}, \texttt{seek}, \texttt{write} and \texttt{stat}.
 
 This structure acts like the vtable for the FILE structure, but it does not behave like the oridinary vtable seen when working with virtual functions 
 and derived classes, which are dynamic and supports run time bindings. This vtable is instead expected to behave as a statically bound vtable.  There exist 
 other libc functions, like \textit{fopencookie}, to override some of the FILE operation implementations, but not all operations are supported, and 
 \textit{fopencookie} also does not attach itself to a standard file I/O stream, 
-instead working with user defined buffers a.k.a cookies). 
+instead works  with user defined buffers a.k.a cookies. 
 
-Taking advantage of the contiguous memory allocation of the FILE and \textit{\_IO\_jump\_t}, one can overwrite the vtable with a custom vtable definition for all the operations needed for DCE. One can make a dummy \textit{\_IO\_FILE\_plus} 
-pointer point to the explicitly casted FILE object. \textit{memcpy} the existing vtable to a local copy, modify and overwrite the stream operations with a 
-custom written implementation, and then re-point the vtable field of the dummy \textit{\_IO\_FILE\_plus} to the local modified vtable.  This allows
-control over stream operations, which can now be routed through and and to behave as ns-3 streams, Unix FD streams, etc. based on the type of file 
-descriptor that is defined.  Although this control over FILE streams
-to regulate stream buffer flushing and data redirection is productive for
-DCE, these techniques can also be used maliciously for
-\textit{buffer overflow attacks}.
+Taking advantage of the contiguous memory allocation of the FILE and \textit{\_IO\_jump\_t}, one can overwrite the vtable with a custom vtable definition for all
+the operations needed for DCE. One can make a dummy \textit{\_IO\_FILE\_plus} 
+pointer point to the explicitly casted FILE object. \textit{memcpy} the existing vtable to a local copy, modify and overwrite the stream operations with
+custom written function pointers, and then re-point the vtable field of the dummy \textit{\_IO\_FILE\_plus} to the local modified vtable.  This allows
+control over stream operations, which can now be routed through DCE and made to behave as ns-3 streams, Unix FD streams, etc. based on the type of file 
+descriptor that is defined.
 
 \sloppy Post libc-2.25, security features have been implemented to glibc to identify 
-and block buffer overflow attacks on the FILE object. Whenever any FILE
+and prevent such block buffer overflow attacks on the FILE object. Whenever any FILE
 operation is executed, glibc 
-verifies if the FILE object's vtable can be trusted and is not corruputed or manipulated. To verify this, it makes a call to 
+verifies the FILE object's vtable. It makes a call to 
 \textit{\_IO\_validate\_vtable}. Every libio vtable is defined in a unique section called \textit{libio\_IO\_vtables}. By definition, libc trusts
 the vtable if the vtable of the current FILE object lies within this section. It checks if the offsets of this vtable lies between 
 \textit{\_\_stop\_\_\_libc\_IO\_vtables} and \textit{\_\_start\_\_\_libc\_IO\_vtables}, if it does, we can continue with the operation, if not, libc 
 conducts a final check by calling \textit{\_IO\_vtable\_check} which makes final checks on the FILE vtable pointer location, namespace and edge cases
 where FILE * objects are passed to threads which are not in the currently linked executable.  When DCE overflows the \textit{\_IO\_FILE\_plus} and 
-overwrites the \textit{\_IO\_jump\_t}, it does not lie in \textit{libio\_IO\_vtables} section and it also does not pass the pointer mangling sanity checks, leading to a \textit{Fatal error: glibc detected an invalid stdio handle}
+overwrites the \textit{\_IO\_jump\_t}, it does not lie in \textit{libio\_IO\_vtables} section and it also does not pass the pointer mangling sanity checks, leading to 
+a \textit{Fatal error: glibc detected an invalid stdio handle}
 
 \subsection{PIE loading and usage}
 Position-independent-executables (PIE) are applications compiled with special compiler flags that allow the application to be loaded into an arbitrary
-memory address, not depending on absolute symbol addresses. Since several DCE applications may need to be loaded into memory, and also have control over the
-position of the \text{main} symbol of the loaded application, DCE needs to have position independent executables, so that when they are loaded into memory,
-the symbol positions in memory are dynamic, giving control over when an application is launched in a simulation (which can be configured in the script 
-using available ns-3 programming constructs for the \textit{DceApplicationManager} class). To implement this, DCE uses the \textit{CoojaLoader} which 
-uses \textit{dlmopen} under the hood to load the executable into memory. In glibc library versions newer than 2.25, security checks have been introduced to identify such 
-PIE objects being loaded through \textit{dlmopen}, and in case the \texttt{DF\_1\_PIE} flag is found in the object's ELF Dynamic headers, it will abort with an error.
+memory address, not depending on absolute symbol addresses. DCE needs to have position independent executables, so that when they are loaded into memory,
+the symbol positions in memory are dynamic, giving control over when the application main is called in a simulation.To implement this, DCE uses the \textit{CoojaLoader}
+which uses \textit{dlmopen} under the hood to load the executable into memory. In glibc library versions newer than 2.25, security checks have been introduced to 
+identify such PIE objects being loaded through \textit{dlmopen}, and in case the \texttt{DF\_1\_PIE} flag is found in the object's ELF Dynamic headers, it will abort 
+with an error.
  
 
 \subsection{Linux Networking Stack for DCE}
