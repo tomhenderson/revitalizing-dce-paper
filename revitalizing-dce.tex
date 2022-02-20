@@ -338,9 +338,6 @@ with an error.
  
 
 \subsection{Linux Networking Stack for DCE}
-DCE also provides implementation options for ns-3 simulations for the networking stack at the TCP/IP layers.  
-Linux and FreeBSD stacks are available as alternatives to the native ns-3 TCP/IP implementation.
-Script writers can configure the \textit{DceManager} class to use the chosen stack.
 A Linux kernel library port allows DCE to export callback structures, abstracting the internal network data flow, coordinating Linux kernel synchronization, 
 process creation, and DCE-kernel task, IRQ and tasklet scheduling and synchronization, to expose a Linux-like execution environment for host applications. 
 
@@ -374,15 +371,12 @@ application provided exported functions and callbacks for proper execution, whic
 \paragraph{Library kernel boot order and scheduling}
 Both LKL and LibOS differ form each other on how it initializes the kernel and schedules tasks, which also determines many execution factors of DCE. 
 
-Apart from certain functions that are initialized only in a user OS, such as hardware drivers and devices, network buses, NICs, etc., LKL spins up a high level CPU lock controlled thread, which makes calls to 
-\texttt{start\_kernel}. Since LKL is a uniprocessor system, it initializes the kernel on a singular LKL thread, locks of 
-which are synchronized with Linux scheduler calls, which are called when the scheduler decides to switch execution control 
+LKL spins up a high level CPU lock controlled thread, which makes calls to \texttt{start\_kernel}. Since LKL is a uniprocessor system, it initializes 
+the kernel on a singular LKL thread, 
+locks of which are synchronized with Linux scheduler calls, which are called when the scheduler decides to switch execution control 
 to kernel level tasks for preemption, and other tasks, which require certain memory level moderation to achieve
-atomic operation. Also, since the LKL CPU thread needs to be initialized before any Linux functions can be used by the 
-application that is using the LKL library, it eventually disrupts the flow of DCE scripts, which work on a 
-scheduling algorithm and specific ns-3 task context switch paradigms that are different from the Linux kernel,
-making it wait for LKL's internal Linux kernel opertions to finish, before it can schedule other ns-3 lightweight
-threads.  The net result of this tension is to cause simulation result to differ from real world observations.
+atomic operation. Since, the LKL thread can only be preempted by kernel level tasks and not through LKL API, launching a second user task is not possible if 
+CPU lock is held, blocking the DCE script execution infinitely which works based on LWPs.
 
 LibOS makes 
 use of its own \texttt{lib\_init} fuction which calls specific setups calls required to initialize the kernel.
