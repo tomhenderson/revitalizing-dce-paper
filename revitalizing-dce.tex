@@ -257,7 +257,7 @@ the vtable if the vtable of the current FILE object lies within this section. It
 \textit{\_\_stop\_\_\_libc\_IO\_vtables} and \textit{\_\_start\_\_\_libc\_IO\_vtables}, if it does, we can continue with the operation, if not, libc 
 conducts a final check by calling \textit{\_IO\_vtable\_check} which makes final checks on the FILE vtable pointer location, namespace and edge cases
 where FILE * objects are passed to threads which are not in the currently linked executable.  When DCE overflows the \textit{\_IO\_FILE\_plus} and 
-overwrites the \textit{\_IO\_jump\_t}, it does not lie in \textit{libio\_IO\_vtables} section and it also does not pass the pointer mangling sanity checks, leading to a \textit{\_\_libc\_fatal (\"Fatal error: glibc detected an invalid stdio handle\");}
+overwrites the \textit{\_IO\_jump\_t}, it does not lie in \textit{libio\_IO\_vtables} section and it also does not pass the pointer mangling sanity checks, leading to a \textit{Fatal error: glibc detected an invalid stdio handle}
 
 \subsection{PIE loading and usage}
 Position-independent-executables (PIE) are applications compiled with special compiler flags that allow the application to be loaded into an arbitrary
