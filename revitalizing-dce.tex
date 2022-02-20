@@ -393,31 +393,15 @@ also popped off the ns-3 task queue.
 The section discusses how the modified glibc is patched to disable problematic security checks which were discussed as some of the challenges previously
 in the paper and also explains how the link procedure works.
 
-The initial build step of DCE includes calling a script named \texttt{dcemakeversion.c}. This script is responsible 
-for extracting the symbol table of the libc currently being linked to (all symbols for the libraries libc, libpthread, librt, lib and libdl). These 
-libraries are the various modular extensions of the glibc providing features such as pthreads, math, dynamic library loading and the base libc 
-library as well. The symbols are read from the Elf headers of the respective shared library .so file, and stored in a local .version file.
-The symbol table for all of these libraries are important, as DCE generates a shared library called \texttt{libc-ns3.so} which is a 
-for the local libc and DCE implementations, on top of which host applications are executed. This shared library defines 
-all symbols which are defined in the local libc, as \texttt{NATIVE} and all the features implemented inside DCE as \texttt{DCE}. All other symbols that are new to 
-DCE but not implemented by DCE, but that are a part of the local system libc, are then referenced in the .version files.  These symbols are then defined 
-as well, to avoid any runtime symbol lookup errors. DCE then generates preprocessor mappings for all of the symbols. All DCE defined symbols will 
-natively be mapped to DCE implemented versions of them, rather than to the system libc implementation, and all NATIVE defined symbols will be mapped 
-to global namespace implementations, which are the ones already implemented in the system libc. Users would compile their applications on top of 
-the system libc itself, but with an extra -fPIC and -pie flag, which allows us to load the applications dynamically into the DCE process address 
-space. The next step is to load out the libc-ns3.so shared object file, and to call the \texttt{libc\_setup} function, which initializes the system call mappings. 
-DCE also subsequently loads other libraries that have been generated in a similar way, such as \texttt{libpthread-ns3.so}, \texttt{librt-ns3.so}, \texttt{libm-ns3.so}, 
-and \texttt{libdl-ns3.so}.As a final step, the host application is loaded and the main function of the application is called through the dlmopen object lookup constructs, 
-which starts to now work on top of the custom libraries.
+The DCE script \texttt{dcemakeversion.c} help generate .version files for all the system shared library which are statically linked to DCE's custom libc. A 
+shared library \texttt{libc-ns3.so} is created with symbols tagged as NATIVE and DCE based on there position of declaration which are mapped through the 
+\texttt{libc\_setup} function. The DCE type symbols are implemented 
+inside the DCE source code. Users compile their applications with an extra -fPIC and -pie flag, which helps DCE load the applications dynamically into the DCE process 
+address space. The main of these application are then called based on the simulation script, which if require FILE operations would require DCE to To override the vtable 
+mangling security checks of glibc, 
+for which it is necessary to override the security checks on vtable pointer mangling. A security patched glibc is build and installed on a specific location. gcc is then made 
+to use that directory as the SYSROOT and also point the library, header and ELF executable lookup directories to our custom glibc using -L, -I, --rpath and --rpath-link.
 
-To override the vtable mangling security checks of glibc, it is necessary to override the security checks on vtable pointer mangling. 
-The gcc compiler and linker options could be used to 
-reconfigure the default build environment to build DCE on top of a customized
-glibc. It is necessary to repoint the default libc directory to our custom glibc root. This is where the \texttt{--sysroot} option 
-is used to set it to correct bake build directory. Following this, one can then add the custom glibc prioritized directory for library and header file lookup using the 
--L and -I options, respectively. Next, the rpath and rpath-link paths for ELF executables that could be linked to the shared objects at run time 
-or link time, respectively, are set. Finally,the dynamic linker is set to the newly built library, using the -Wl--dynamic-linker flag.  All these changes
-are placed under an unclosed -Wl --start-group, as DCE requires other linker flags, which can be added before inserting the ending -Wl --end-group.
 
 \subsection{Bake Build Automation}
 
@@ -471,11 +455,10 @@ The ns-3-dce waf script supports both docker based build and native builds on th
 build directory based on waf configure and local environemnt variables and compiles ns-3-dce on top of it.
 
 \subsection{net-next-nuse-5.10}
-Net-next-nuse, introduced above, is an architecture port of the Linux kernel, which resorts to selective kernel module linking and which takes control over critical kernel 
-components such as the slab allocator, task scheduler, workqueue-waitqueue handling, timer based function invocation, as well as some kernel 
-utilities such as jiffies and random number generators. It also sets up emulations of the network system calls for both general socket networking 
-operations as well netdevice based operations. All of this is exposed through an API initialised by a simulator initialisation call, \texttt{sim\_init}, 
-which does a bidirectional mapping of the imported (DCE to Linux) and exported (Linux to DCE) function utilities.
+Net-next-nuse, introduced above, is an architecture port of the Linux kernel, which resorts to selective kernel module linking and which takes control over 
+critical kernel 
+components such as memory SLAB allocators through internal DCE callbacks mapped to internal SLIB interface, 
+task schedulers and timer functions, provided Linux network stack as library through an exported API.
 
 \subsubsection{Background}
 In this section, we will see what are some of the major challenges which net-next-nuse solves and the basics of how the Linux kernel is modified to 
@@ -495,13 +478,6 @@ net-next-nuse  performs  a selective linking of
 kernel modules and utilities and to avoid linking the scheduler, workqueue, waitqueue and other such linked components, opting to instead implement
 them using DCE imported functions mapped to TaskManager utilities. As a result, every time that some process wants to preempt and block, the kernel calls 
 \texttt{schedule()} or \texttt{schedule\_timeout()}, and control is passed to DCE to take care of it. 
-
-\subsubsection{Slab Allocator}
-\sloppy Most of the initcalls require the creation of a memory cache object called \texttt{kmem\_cache}. These memory slabs are used to allocate memory to child 
-objects, using functions like \texttt{kmem\_cache\_alloc(...)} and functions as simple as \texttt{kmalloc(...)} to allocate space for a pointer object. The 
-kernel already has slab allocators (two such allocators are SLUB and SLOB), but all of them allocate space internally, giving no control to DCE. We thus use a custom 
-SLAB allocator called SLIB, which calls internal \texttt{DCE's malloc(...)} functions and sets up \texttt{kmem\_cache} data structures and constructors etc. It also 
-implements compound and single page operations like\texttt{\_put\_page(...)}, \texttt{kfree(...)} and array space allocation. 
 
 \subsubsection{Virtual Kernel Task and its Real Fiber Equivalent}
 net-next-nuse uses exported functions and internal DCE calls to allow kernel task creation  which are exposes to net-next-nuse through an API during library object.
