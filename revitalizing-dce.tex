@@ -239,14 +239,6 @@ other libc functions, like \textit{fopencookie}, to override some of the FILE op
 \textit{fopencookie} also does not attach itself to a standard file I/O stream, 
 instead working with user defined buffers a.k.a cookies). 
 
-A key aspect of DCE is that it needs to \textit{hijack}
-application operations like system calls, file I/O operations, and networking
-system calls, and re-route them through 
-corresponding handlers based on the application logic and simulation script implementation. Considering file I/O operations, DCE needs to have control 
-over read/write/close/seek/stat operations of each open file, which requires
-overwriting the vtable handlers with the corresponding handlers defined 
-in DCE's stdio definition source files. 
-
 Taking advantage of the contiguous memory allocation of the FILE and \textit{\_IO\_jump\_t}, one can overwrite the vtable with a custom vtable definition for all the operations needed for DCE. One can make a dummy \textit{\_IO\_FILE\_plus} 
 pointer point to the explicitly casted FILE object. \textit{memcpy} the existing vtable to a local copy, modify and overwrite the stream operations with a 
 custom written implementation, and then re-point the vtable field of the dummy \textit{\_IO\_FILE\_plus} to the local modified vtable.  This allows
@@ -490,7 +482,7 @@ This invocation function does a safe offset based function address lookup and ca
 Before we call all the init functions, I also initialized the \texttt{files} and \texttt{fs} cache pointers for cache based memory 
 allocation using \texttt{kmem} in file operation methods, with slab objects aligned to a cache line, panic enabled on relocation errors, and also accounting enabled 
 for the cache. These caches are required while setting up the \texttt{fs\_struct} and \texttt{files\_struct} for each new task in its 
-corresponding \texttt{task\_struct}. Please see [5.9].
+corresponding \texttt{task\_struct}. 
 
 \subsubsection{Security LSM Module}\label{Section_LSM}
 Certain kernel initialization procedures proceed only when the desired actions are allowed by the LSM. Below is a brief description of why the LSM is requied and how 
