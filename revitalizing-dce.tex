@@ -579,30 +579,16 @@ The below code keeps sections \texttt{lsm\_info.init} and \texttt{early\_lsm\_in
 When net-next-nuse is loaded as a shared library into DCE and \texttt{lib\_init(...)} is called, it invokes certain kernel methods, which triggers 
 kernel initialization routines which help setup critical components such as the mount namespaces, vfs, kernel threads and tasks, etc. 
 Since Linux kernel 4.4.0, the
-kernel has envolevd a lot in terms of how the kernel gets initialized. The section below discusses certain alignments which had to be made with respect to 
+kernel has envolevd a lot in terms of how the kernel gets initialized. The section below discusses some of the alignments which had to be made with respect to 
 Linux kernel 5.10 to integrate net-next-nuse's architecture.
 
-The \texttt{UCOUNT\_MNT\_NAMESPACES} of the current task’s nsproxy is used, which has an upper bound of \texttt{init\_task}‘s value.  Since
-a complete architecture port is not needed, this value is not defined, and
-would throw a segmentation fault, when \texttt{READ\_ONCE(...)} tries to make
-an atomic operation on it to access it and increase the value by 1 if doing so doesn’t exceed the max limit, using the \texttt{atomic\_inc\_below(..)} macro.
-We thus manually set the value for it, during task initialisation in \texttt{lib\_task\_start(...)}. The current task's nsproxy is used to allocate the 
-\texttt{mnt\_namespace} which is required when VFS sets up the mount tree as a side effect of the initcall \texttt{mnt\_init}. We then set the value of the 
-mount namespaces counter  limit to maximum possible mount namespaces.
-
-\begin{lstlisting}[style=CStyle]
-ucounts->ns->ucount_max[UCOUNT_MNT_NAMESPACES] = MNS_MAX;
-\end{lstlisting}
-
-\sloppy\texttt{sock\_init} is one of the many initcalls which are called when 
-\texttt{sim\_init} is invoked by DCE. It is necessary to have initialised the proc file system completely,
-so that the sysctl interface could be initialised by the \texttt{net\_sysctl\_init(...)}. We then register the sockfs filesystem using \texttt{register\_filesystem(...)} 
-and go for a \texttt{kern\_mount(...)} which invokes the VFS kern mount function and as discussed above, it requires the \texttt{mnt\_init(...)} to correctly setup 
-the mount environment. Initially, in net-next-nuse-4.4.0, \texttt{mnt\_init(...)}  was made a blank function.
-In older kernel releases, sockfs file system init did not depend on a file system context, and required a mount function (\texttt{sockfs\_mount}) which
-would directly mount the file system onto the kernel, but in commit [6.1], the socket file system mounting process was handed over to the
-internal VFS mounting mechanism, thus breaking our setup. So, now we need to have the \texttt{mnt\_init(...)} and put in patches and glue codes wherever
-needed.
+The kernel depends on certain namespace based constaint variables while initializing the kernel. One such requirement is the \texttt{UCOUNT\_MNT\_NAMESPACES}
+of the \texttt{init\_task}. Since a complete architecture port is not needed, this value is not defined, so atomic reads on this value would seg fault. So 
+we manually set it to \texttt{MNS\_MAX} for the current task's nsproxy. One other alignment was the \texttt{sock\_init}, which is dependent on the proc file system  
+to setup the sysctl interface using \texttt{net\_sysctl\_init(...)}. Then the sockfs filesystem is registered using \texttt{register\_filesystem(...)}. Previously,
+sockfs file system init did not depend on a file system context and required only a mount function \texttt{sockfs\_mount}, but in a later Linux commit the sockfs 
+mounting process was handed over to the internal VFS mounting initcall, thus we had to glue code the \texttt{mnt\_init(...)} initcall. Many other alignments, such as,
+atomic operations, NAPI atomic read issues, etc. were fixed based on later Linux commits which were introduced.
 
 \subsubsection{Native Kernel NetDevices}
 Certain components of ns-3 require the setup of custom NetDevices which require a custom MTU and other flags, such as whether the device should enable multicast, 
