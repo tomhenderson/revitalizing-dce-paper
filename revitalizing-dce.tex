@@ -454,6 +454,7 @@ the host.
 The ns-3-dce waf script supports both docker based build and native builds on the same branch. It selects the glibc 
 build directory based on waf configure and local environemnt variables and compiles ns-3-dce on top of it.
 
+
 \subsection{net-next-nuse-5.10}
 Net-next-nuse, introduced above, is an architecture port of the Linux kernel, which resorts to selective kernel module linking and which takes control over 
 critical kernel 
@@ -532,18 +533,9 @@ important for us to link the LSM, and setup our build/linking scipts accordingly
 
 The security module of the Linux kernel depends on a special configuration called the \texttt{CONFIG\_LSM}. The LSM module requires a few architecture
 defined variables, which are placed in a specific section
-of the library called .init.data section, through linker script. 
-The below code keeps sections \texttt{lsm\_info.init} and \texttt{early\_lsm\_info.init} even if not referenced, and also defines start and end of both.
-\begin{lstlisting}[style=CStyle]  
-  .init.data : AT(ADDR(.init.data)) {    
-		__start_lsm_info = .;	
-		KEEP(*(.lsm_info.init))
-		__end_lsm_info = .;    
-		__start_early_lsm_info = .;	
-		KEEP(*(.early_lsm_info.init))
-		__end_early_lsm_info = .;
-  }
-\end{lstlisting}
+of the library called .init.data section using the \texttt{AT(ADDR(...))} directive, through linker script. 
+The below code keeps sections \texttt{lsm\_info.init} and \texttt{early\_lsm\_info.init} even if not referenced using the \texttt{KEEP} directive , 
+and also defines start and end information sections of both.  The implementation of them were drawn from LKL's LSM definition.
 
 \subsubsection{Kernel code and net-next-nuse alignment}
 When net-next-nuse is loaded as a shared library into DCE and \texttt{lib\_init(...)} is called, it invokes certain kernel methods, which triggers 
@@ -560,11 +552,14 @@ sockfs file system init did not depend on a file system context and required onl
 mounting process was handed over to the internal VFS mounting initcall, thus we had to glue code the \texttt{mnt\_init(...)} initcall. Many other alignments, such as,
 atomic operations, NAPI atomic read issues, etc. were fixed based on later Linux commits which were introduced.
 
+\iffalse
 \subsubsection{Native Kernel NetDevices}
 Certain components of ns-3 require the setup of custom NetDevices which require a custom MTU and other flags, such as whether the device should enable multicast, 
 or is it a point-to-point device, etc. These flags can be put together, and one can allocate a Linux netdevice struct for each such requirement using
-the \texttt{alloc\_netdev(...)}, passing all of the configuration needed for details such as MTU, address length, and destructors, along with a \texttt{register\_netdev(...)} call.
+the \texttt{alloc\_netdev(...)}, passing all of the configuration needed for details such as MTU, address length, and destructors, along with 
+a \texttt{register\_netdev(...)} call.
 This returns back a forward declared struct SimDevice which is used as a NetDevice object inside ns-3 which is required by ns-3's core networking modules.
+\fi
 
 \section{Performance Evaluation}
 We describe some performance evaluations of the DCE code, following the
