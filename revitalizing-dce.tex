@@ -139,7 +139,7 @@ Parth Pratim Chatterjee\\
 \alignauthor
 Thomas R. Henderson\\
        \affaddr{University of Washington}\\
-       \email{tomhend@u.washington.edu}
+       \email{tomhend@uw.edu}
 }
 % There's nothing stopping you putting the seventh, eighth, etc.
 % author on the opening page (as the 'third row') but we ask,
@@ -150,22 +150,25 @@ Thomas R. Henderson\\
 % is the number that will appear on the first page PLUS the
 % number that will appear in the \additionalauthors section.
 
+%\toappear{This project was funded by the 2021 Google Summer of Code.}
 \maketitle
 \begin{abstract}
 %  * What was done? 
-This paper reports on significant updates that were made to Direct Code Execution to adapt it to the evolution of application execution environments on Linux Systems 
-and the standard libc library. An attempt to update the Linux Kernel backend which support the Linux network stack on custom simulation scripts through the 
-net-next-nuse interface as a shared library, was made, implementation details and design decisions for which have been documented in this paper.
-Finally, a docker based environment was worked on to ease the installation and usage of Direct Code Exection on Linux 
-Systems, expanding the domain of Linux distributions supported by DCE also simplyfying the process of releasing new and maintaining old versions by the maintainers 
-and upgrading for new users.
-%  * Why do it? 
-The newer Linux distributions introduced security features in it's standard system libc which restricted the major architecture and workflow of DCE. The network stack 
-which was being used in DCE included a NUSE port on top of Linux Kernel 4.4.0, which has fallen out of date, so a later Linux kernel had to be ported into the 
-net-next-nuse architecture.
-%  * What were the results?
-Direct Code Execution now supports execution on newer Ubuntu based distributions and all distributions which support Docker can now use DCE with minimal build steps 
-and dependency installations. Linux Kernel 5.10.0 backed net-next-nuse-5.10 can now run Ipv4 applications on custom DCE simulation scripts.
+This paper reports on significant updates that were made to ns-3's Direct Code
+Execution (DCE) feature to restore its compatibility with modern Linux
+distributions and kernel stacks.  Recent versions of the GNU C standard
+library introduced security features that blocked DCE's preferred mode of 
+operation, and DCE's ability to incorporate the
+TCP/IP kernel stack from recent Linux kernels was also disrupted by kernel
+evolution.  This paper describes the challenges and possible solutions to
+each issue and summarizes the solution that was implemented to restore
+compability.  Finally, a Docker-based environment was configured to ease the
+installation and usage of DCE for ns-3, expanding the range of Linux
+distributions suported.  The result of this project is a forthcoming
+DCE release supporting Ubuntu 20.04 distributions natively, and others
+via Docker, and initial support for Linux kernel 5.10 use for IPv4-based
+applications.  Our performance evaluation highlights the need to next work
+on performance profiling to improve execution speed.
 \end{abstract}
 
 % A category with the (minimum) three required fields
@@ -175,7 +178,7 @@ and dependency installations. Linux Kernel 5.10.0 backed net-next-nuse-5.10 can 
 
 %\terms{Theory}
 
-\keywords{ns-3}
+%\keywords{ns-3}
 
 \section{Introduction}
 
@@ -207,8 +210,7 @@ the original code.
 
 \begin{figure*}[h!]
   \centering
-    \includegraphics[width=0.95\textwidth]{figs/architecture.png}
-
+    \includegraphics[width=0.9\textwidth]{figs/architecture.png}
   \caption{DCE architecture (redrawn from Figure 1 of [1]) with recent extensions highlighted}
   \label{fig:architecture}
 \end{figure*}
@@ -244,14 +246,16 @@ semi-dormant for the past five years or so.  As a result, the host
 operating systems that DCE is compatible with are stuck in the past.
 The most recent Linux distribution compatible with the latest (DCE-1.11)
 release is Ubuntu 16.04.  It has been estimated
+ that, in 2020, the Linux kernel comprised 27.8 million lines of code and
+experienced 75,000 commits in the past year.  
 \footnote{\url{https://www.theregister.com/2020/01/06/linux\_2020\_kernel\_systemd\_code}}
- that, in 2020, roughly 27.8 million lines of code were added to Linux
-kernel and systemd, with roughly 75,000-80,000 commits per year. Although
+Although
 DCE does not have to change for most of these commits, it should be clear
-that the host operating system environment that DCE has to live within
-undergoes rapid change, leading to a DCE maintenance burden.
+that the host operating system environment that DCE both emulates and exists
+within undergoes frequent change, leading to a DCE maintenance burden.
 
-This paper reports on a recent project to restore DCE's compatibility with
+This paper reports on a recent ns-3 Google Summer of Code project to restore
+DCE's compatibility with
 recent Linux releases and kernel stack versions.  The project required
 a lot of adjustments to DCE to account for changes in Linux and in the
 C (and C++) standard library (on Linux, this library is called \emph{glibc}).
@@ -265,14 +269,12 @@ to kernel version 5.10.  A new DCE release (1.12) is being prepared with
 capability to run on Ubuntu 20.04, and the use of Docker will facilitate
 use on other modern Linux systems as well.
 
-The rest of this paper is organized as follows:
-\begin{itemize}
-\item Section 2 provides an overview on the technical challenges due to Linux and glibc evolution.
-\item Section 3 outlines our solutions to these challenges.
-\item Section 4 presents a performance evaluation of the new software.
-\item Section 5 describes related work.
-\item Section 6 covers our conclusions and directions for future work.
-\end{itemize}
+The rest of this paper is organized as follows.  Section 2 provides an
+overview on the technical challenges due to Linux and glibc evolution.
+Section 3 outlines our solutions to these challenges.
+Section 4 presents a performance evaluation of the new software.
+Section 5 describes related work.
+Finally, Section 6 covers our conclusions and directions for future work.
 
 \section{Challenges}
 
@@ -783,11 +785,11 @@ The next step would be to profile DCE further to understand what are the other p
 the runtime of scripts. We also plan to work on building a more modular Linux library port with an efficient 
 middleware notification based task synchronizer, which would have less maintenance cost and increased kernel feature availability.
  We also plan to work on Ipv6 support for net-next-nuse-5.10 on the same architecture as now. Building an elf-loader for the libc-2.31 will also be a 
- suggested future effort, as it reduces DCE execution time drastically.
+future effort, as it reduces DCE execution time drastically.
 
 %ACKNOWLEDGMENTS are optional
-\section{Acknowledgments}
-This project was funded by the 2021 Google Summer of Code.
+%\section{Acknowledgments}
+%This project was funded by the 2021 Google Summer of Code.
 %
 % The following two commands are all you need in the
 % initial runs of your .tex file to
