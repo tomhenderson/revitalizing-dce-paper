@@ -399,7 +399,7 @@ The DCE script \texttt{dcemakeversion.c} help generate .version files for all th
 shared library \texttt{libc-ns3.so} is created with symbols tagged as NATIVE and DCE based on there position of declaration which are mapped through the 
 \texttt{libc\_setup} function. The DCE type symbols are implemented 
 inside the DCE source code. Users compile their applications with an extra -fPIC and -pie flag, which helps DCE load the applications dynamically into the DCE process 
-address space. The main of these application are then called based on the simulation script, which if require FILE operations would require DCE to To override the vtable 
+address space. The main of these application are then called based on the simulation script, which if require FILE operations would require DCE to override the vtable 
 mangling security checks of glibc, 
 for which it is necessary to override the security checks on vtable pointer mangling. A security patched glibc is build and installed on a specific location. gcc is then made 
 to use that directory as the SYSROOT and also point the library, header and ELF executable lookup directories to our custom glibc using -L, -I, --rpath and --rpath-link.
