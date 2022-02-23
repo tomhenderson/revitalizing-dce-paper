@@ -162,9 +162,9 @@ operation, and DCE's ability to incorporate the
 TCP/IP kernel stack from recent Linux kernels was also disrupted by kernel
 evolution.  This paper describes the challenges and possible solutions to
 each issue and summarizes the solution that was implemented to restore
-compability.  Finally, a Docker-based environment was configured to ease the
+compatibility.  Finally, a Docker-based environment was configured to ease the
 installation and usage of DCE for ns-3, expanding the range of Linux
-distributions suported.  The result of this project is a forthcoming
+distributions supported.  The result of this project is a forthcoming
 DCE release supporting Ubuntu 20.04 distributions natively, and others
 via Docker, and initial support for Linux kernel 5.10 use for IPv4-based
 applications.  Our performance evaluation highlights the need to next work
@@ -185,7 +185,7 @@ on performance profiling to improve execution speed.
 ns-3 is a popular discrete-event network simulator, written in C++, with
 simulation models across all layers of the network stack.  The lowest level
 of abstraction in ns-3 is typically the MAC-level frame, and for mainstream
-protocols such as TCP/IP, ns-3 aims to be standards compiliant in how it
+protocols such as TCP/IP, ns-3 aims to be standards compliant in how it
 encodes packets.  By default, ns-3 runs its simulations in virtual time,
 as fast or as slow as the CPU can process the necessary simulation events.
 
@@ -250,8 +250,8 @@ release is Ubuntu 16.04.  It has been estimated
 experienced 75,000 commits in the past year.  
 \footnote{\url{https://www.theregister.com/2020/01/06/linux\_2020\_kernel\_systemd\_code}}
 Although
-DCE does not have to change for most of these commits, it should be clear
-that the host operating system environment that DCE both emulates and exists
+DCE does not have to change for most of these commits, 
+the host operating system environment that DCE both emulates and exists
 within undergoes frequent change, leading to a DCE maintenance burden.
 
 This paper reports on a recent ns-3 Google Summer of Code project to restore
@@ -274,7 +274,7 @@ overview on the technical challenges due to Linux and glibc evolution.
 Section 3 outlines our solutions to these challenges.
 Section 4 presents a performance evaluation of the new software.
 Section 5 describes related work.
-Finally, Section 6 covers our conclusions and directions for future work.
+Finally, Section 6 concludes with directions for future work.
 
 \section{Challenges}
 
@@ -300,16 +300,16 @@ struct _IO_FILE_plus
 };
 \end{lstlisting}
 
-By nature of the implementation of the kernel's memory allocation processes, the contents of a struct are allocated in contiguous memoory locations. 
+By nature of the implementation of the kernel's memory allocation processes, the contents of a struct are allocated in contiguous memory locations. 
 The FILE and the \textit{\_IO\_jump\_t} objects are allocated in contiguous memory locations. Specifically, the 
 \textit{\_IO\_jump\_t} areas is interesting to DCE, as it defines the callbacks or reference pointers to the functions handlers for each supported file 
-operations such as , texttt{read}, \texttt{close}, \texttt{seek}, \texttt{write} and \texttt{stat}.
+operations such as \texttt{read}, \texttt{close}, \texttt{seek}, \texttt{write} and \texttt{stat}.
 
-This structure acts like the vtable for the FILE structure, but it does not behave like the oridinary vtable seen when working with virtual functions 
+This structure acts like the vtable for the FILE structure, but it does not behave like the ordinary vtable seen when working with virtual functions 
 and derived classes, which are dynamic and supports run time bindings. This vtable is instead expected to behave as a statically bound vtable.  There exist 
 other libc functions, like \textit{fopencookie}, to override some of the FILE operation implementations, but not all operations are supported, and 
 \textit{fopencookie} also does not attach itself to a standard file I/O stream, 
-instead works  with user defined buffers a.k.a cookies. 
+instead works  with user defined buffers, otherwise known as cookies. 
 
 Taking advantage of the contiguous memory allocation of the FILE and \textit{\_IO\_jump\_t}, one can overwrite the vtable with a custom vtable definition for all
 the operations needed for DCE. One can make a dummy \textit{\_IO\_FILE\_plus} 
@@ -361,10 +361,10 @@ and rerouting them through nuse and kernel defined routines.
 
 \subsubsection{LKL vs. LibOS}
 We conducted a comparison of LKL and LibOS approaches according to different design parameters and considerations for a complex application framework such as
-DCE with very specific demands from it's underying network stack.
+DCE with very specific demands from it's underlying network stack.
 
 \paragraph{Linux feature support \& Maintenance}
-On comparing LKL with LibOS, on the ease of entending support for Linux features which are compiled into the shared library port and 
+On comparing LKL with LibOS, on the ease of extending support for Linux features which are compiled into the shared library port and 
 can be used through the API, LKL seems to win here, as adding support for new features in later kernels can be as easy as a git rebase, as not kernel internal code  
 is manipulated and also the Kernel is built using minimal changes to the original Linux build steps. net-next-nuse on the other hand, would require selective Linux 
 kernel linking, bridges the gap between application workspace and Linux kernel networking stack with the help of glue code, kernel component connector code, and user 
@@ -381,12 +381,11 @@ atomic operation. Since, the LKL thread can only be preempted by kernel level ta
 CPU lock is held, blocking the DCE script execution infinitely which works based on LWPs.
 
 LibOS makes 
-use of its own \texttt{lib\_init} fuction which calls specific setups calls required to initialize the kernel.
+use of its own \texttt{lib\_init} function which calls specific setups calls required to initialize the kernel.
 It also overrides scheduler member functions, syncing it with ns-3's 
 scheduler. LibOS creates an ns-3 task copy for each kernel task which is created by the \texttt{copy\_process}, \texttt{create\_process},
 etc. Each such task maps with itself a callback function which should be called once the wait time
-for a task is over, or has been invoked as a part of a regular scheduling process. Once tasks are processed, they are 
-also popped off the ns-3 task queue.
+for a task is over, or if invoked as a part of a regular scheduling process. Tasks are processed by popping the ns-3 task queue.
 
 \section{Solutions}
 \label{section:design}
@@ -411,12 +410,12 @@ The process of the modified glibc and Linux compilation can be automated using B
 Bake has a source configuration option named \textit{patch}, which can safely apply a patch, without re-applying if it has already been applied before.  
 This allows, for example, a large codebase to be fetched in its unaltered form, while Bake must maintain and apply only a small patch file to it.
 Using this option, Bake applies the DCE-specific glibc patch, which disables the security checks on vtable mangling, and also disables the 
-PIE object checks for dlmopen position independent executable loading. The glibc is then build using its standard build steps. The linux kernel headers
+PIE object checks for dlmopen position independent executable loading. The glibc is then build using its standard build steps. The Linux kernel headers
 files are then installed into the \texttt{/usr} directory of a custom glibc's sysroot. This finishes with a standard Linux-like system root to use for building 
 DCE without any issues. 
 
 
-\subsection{Docker environnment for DCE}
+\subsection{Docker environment for DCE}
 DCE has a long dependency graph which includes dependencies across 
 system libraries, other projects, Linux kernel and tools, host specific requirements, etc. To ease installation process and standardize the process 
 across docker supported Linux distros, a docker based setup is discussed.
@@ -432,29 +431,29 @@ across docker supported Linux distros, a docker based setup is discussed.
 
 
 The docker release consists of the above docker network setup which is orchestrated using a Docker Compose script. 
-It consists of the docker container, environemnt variables and Volume. The docker 
-container works on a custom image which uses ubuntu:20.04 as the base image. A docker image is collection of Image Layers. Each image layer is a 
-Dockerfile command which adds up to create the final docker environemnt for that image. The docker image has been optimized to use minimal number of layers and 
+It consists of the docker container, environment variables and Volume. The docker 
+container works on a custom image which uses Ubuntu:20.04 as the base image. A docker image is collection of Image Layers. Each image layer is a 
+Dockerfile command which adds up to create the final docker environment for that image. The docker image has been optimized to use minimal number of layers and 
 all redundant layers are merged together. A layer for installing all system dependencies and libraries ensures all listed and unlisted bake 
 dependencies for building DCE are satisfied. It also has a pre-compiled glibc bundled into the image itself. This helps us reduce the docker 
-image size drastically as compared to the building from source everytime which might consume GBs, but this layer takes up 51.36 MB.
-It also has a default environemnt variable 
+image size drastically as compared to the building from source every time which might consume GBs, but this layer takes up 51.36 MB.
+It also has a default environment variable 
 \texttt{DCE\_WITH\_DOCKER=1} which is a flag variable for ns-3-dce waf script to try and execute a docker based build.
 
-The container, as dicussed before, comes with a pre-compiled glibc-2.31 and so the user does not need to build the modified glibc again from source.
-The environment variable \texttt{DCE\_WITH\_GLIBC} tells waf where to look for the modified glibc build directory. This environemnt variable can 
+The container, as discussed before, comes with a pre-compiled glibc-2.31 and so the user does not need to build the modified glibc again from source.
+The environment variable \texttt{DCE\_WITH\_GLIBC} tells waf where to look for the modified glibc build directory. This environment variable can 
 later be changed from inside the docker container to point to a custom glibc build directory if the user wishes to do so. This glibc build is then 
 used by the ns-3-dce waf to compile ns-3-dce. The docker compose also sets up a volume. A docker volume is a mechanism which lets docker containers 
 use persisting data from within the container. Docker containers can attach volumes to themselves
 and map specific directories from withing the docker container to the host directory. Any changes made to that directory withing the  docker container
-is visible and persisted on the mapped host directory and also vice-vers. This is a key requirement for us, as ns-3 projects are used by both 
+is visible and persisted on the mapped host directory and also vice-verso. This is a key requirement for us, as ns-3 projects are used by both 
 researchers and users who wish to just simulate scripts and also project maintainers, contributors and testers who need to be able to make changes 
 to the ns-3 code locally using text editors and IDEs, and test it instantly, also access simulation output files on local file explorer and 
 third party applications. So, we attach a volume which maps the /home/bake directory from within the docker container to the bake directory on 
 the host.
 
 The ns-3-dce waf script supports both docker based build and native builds on the same branch. It selects the glibc 
-build directory based on waf configure and local environemnt variables and compiles ns-3-dce on top of it.
+build directory based on waf configure and local environment variables and compiles ns-3-dce on top of it.
 
 
 \subsection{net-next-nuse-5.10}
@@ -465,7 +464,7 @@ task schedulers and timer functions, provided Linux network stack as library thr
 
 \subsubsection{Background}
 In this section, we will see what are some of the major challenges which net-next-nuse solves and the basics of how the Linux kernel is modified to 
-accomodate this type of architecture.
+accommodate this type of architecture.
 
 Net-next-nuse understands that the way Linux Kernel behaves on the host, and the way the kernel interacts with the task 
 scheduler and how the scheduler operates on the tasks, is completely different from how DCE manages fibers (called tasks in DCE terminology). 
@@ -526,12 +525,12 @@ for the cache. These caches are required while setting up the \texttt{fs\_struct
 corresponding \texttt{task\_struct}. 
 
 \subsubsection{Security LSM Module}\label{Section_LSM}
-Certain kernel initialization procedures proceed only when the desired actions are allowed by the LSM. Below is a brief description of why the LSM is requied and how 
+Certain kernel initialization procedures proceed only when the desired actions are allowed by the LSM. Below is a brief description of why the LSM is required and how 
 it is included into net-next-nuse.
 
 In newer Linux releases \texttt{vfs\_kern\_mount(...)} validates the file system mount context and parses params using \texttt{security\_fs\_context\_parse\_param(...)},
 which checks if the requested operation was blocked in the LSM tables. If this module is not enabled, it would return back ENOPARAM by default and fail. This makes it 
-important for us to link the LSM, and setup our build/linking scipts accordingly.
+important for us to link the LSM, and setup our build/linking scripts accordingly.
 
 The security module of the Linux kernel depends on a special configuration called the \texttt{CONFIG\_LSM}. The LSM module requires a few architecture
 defined variables, which are placed in a specific section
@@ -543,10 +542,10 @@ and also defines start and end information sections of both.  The implementation
 When net-next-nuse is loaded as a shared library into DCE and \texttt{lib\_init(...)} is called, it invokes certain kernel methods, which triggers 
 kernel initialization routines which help setup critical components such as the mount namespaces, vfs, kernel threads and tasks, etc. 
 Since Linux kernel 4.4.0, the
-kernel has envolevd a lot in terms of how the kernel gets initialized. The section below discusses some of the alignments which had to be made with respect to 
+kernel has evolved a lot in terms of how the kernel gets initialized. The section below discusses some of the alignments which had to be made with respect to 
 Linux kernel 5.10 to integrate net-next-nuse's architecture.
 
-The kernel depends on certain namespace based constaint variables while initializing the kernel. One such requirement is the \texttt{UCOUNT\_MNT\_NAMESPACES}
+The kernel depends on certain namespace based constant variables while initializing the kernel. One such requirement is the \texttt{UCOUNT\_MNT\_NAMESPACES}
 of the \texttt{init\_task}. Since a complete architecture port is not needed, this value is not defined, so atomic reads on this value would seg fault. So 
 we manually set it to \texttt{MNS\_MAX} for the current task's nsproxy. One other alignment was the \texttt{sock\_init}, which is dependent on the proc file system  
 to setup the sysctl interface using \texttt{net\_sysctl\_init(...)}. Then the sockfs filesystem is registered using \texttt{register\_filesystem(...)}. Previously,
@@ -572,7 +571,7 @@ a equivalent ns-3 (without DCE) simulation.
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.47\textwidth]{figs/topology.png}
+    \includegraphics[width=0.43\textwidth]{figs/topology.png}
   \caption{Simulation topology (redrawn from Figure 2 of \cite{Tazaki13})}
   \label{fig:topology}
 \end{figure}
@@ -628,7 +627,7 @@ corresponding ns-3 runtimes on each machine.
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.47\textwidth]{figs/hops-vs-pps.png}
+    \includegraphics[width=0.43\textwidth]{figs/hops-vs-pps.png}
   \caption{Packet processing performance as a function of number of network hops}
   \label{fig:hops-vs-pps}
 \end{figure}
@@ -656,7 +655,7 @@ has not been tracked as part of DCE maintenance.
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.47\textwidth]{figs/rate-vs-time.png}
+    \includegraphics[width=0.43\textwidth]{figs/rate-vs-time.png}
   \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 16)}
   \label{fig:rate-vs-time}
 \end{figure}
@@ -702,7 +701,7 @@ these experiments.
 
 \begin{figure}[h!]
   \centering
-    \includegraphics[width=0.47\textwidth]{figs/rate-vs-time-dce12.png}
+    \includegraphics[width=0.43\textwidth]{figs/rate-vs-time-dce12.png}
   \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 20)}
   \label{fig:rate-vs-time-u20}
 \end{figure}
@@ -734,7 +733,7 @@ about 16\% more runtime.   Running within a Docker container was observed
 to incur only about a 3\% performance hit.
 
 As of this writing, the performance differences between the newer DCE 1.12
-versions and the last released (DCE 1.11) versions have not been debugged
+versions and the DCE 1.11 release have not been debugged
 or profiled; the differences were discovered during the course of preparing
 this paper.  The small performance cost of running within a Docker container,
 however, may be worth the convenience to future users.
