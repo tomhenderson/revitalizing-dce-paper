@@ -278,16 +278,13 @@ Finally, Section 6 concludes with directions for future work.
 
 \section{Challenges}
 
-\subsection{libio vtable redirection}
-DCE user applications will typically write to output streams (e.g., stdout).
-Since DCE may
-load multiple application instances, printing to standard output
-would give unordered logs and overwriting.
-To solve this, DCE hijacks the FILE vtable to take control over FILE operations and then maps I/O to separate log files in organized log folders.
+\subsection{libio vtable mangling}
+DCE supports simulation scripts to run diffrent user applications which might write to stdout. Since, DCE is a discrete time simulator, simulations work on top of 
+ns-3 time keeping and every detail should be logged, printing to standard output would give unordered logs and might lead to overwriting of each others data. 
+To solve this, DCE hijacks the FILE vtable to take control over FILE operations and then map I/O to separate log files in organized log folders.
 
- \emph{libio} is the glibc component that handle streams.  
-The vtable is a table maintaining references to functions called for virtual functions defined for a class or an entity, for run-time dispatch of function calls. 
-The FILE structure is a library defined structure which defines the overall organization, 
+The vtable is a table maintaining references to functions called for virtual functions defined for a class or an entity and changes dynamically 
+during runtime unlike compile time decisive function calls. The FILE structure is a library defined structure which defines the overall organization, 
 orientation and properties of any file I/O stream opened
 by the host application. It maintains different parameters for storing useful operational fields like the UNIX based file descriptor number of the 
 opened stream, the read/write offsets and buffer addresses of the stream. The pseudoname for the FILE structure as seen inside libc is \textit{\_IO\_FILE}. 
@@ -343,14 +340,12 @@ with an error.
  
 
 \subsection{Linux Networking Stack for DCE}
-Supporting the Linux networking stack involves more coding work, and we faced
-a choice when upgrading DCE kernel support-- either move to a newer project
-called the Linux Kernel Library (LKL) or stay with what has been called
-\emph{net-next-nuse}, within the LibOS framework.
-Both LibOS and LKL have been compared on various parameters below.
+Two potential Linux-as-a-library projects are LKL and LibOS. Net-next-nuse was a version of kernel support under the LibOS
+framework, and one choice was to keep with this architecture to move to newer kernels, but another choice was to try to use the newly developed LKL with 
+a complete architecture level port. Both LibOS and LKL have been compared on various parameters below.
 
-\subsubsection{Linux Kernel Library}
-LKL is a thorough library port of the Linux kernel that, through some pre-shipped helper shell scripts, can be used to hijack
+\subsubsection{LKL}
+The Linux Kernel Library (LKL) is a library port of the Linux kernel that, through some pre-shipped helper shell scripts, can be used to hijack
 all system calls made by a host application and map them through the ported Linux kernel rather than through system defined implementations. It also allows one 
 to setup network interfaces such as TAP, RAW, VDE , etc. with custom gateways, netmasks, IP addresses, etc. with the help of JSON configuration files. These helper
 shell scripts make use of \texttt{LD\_PRELOAD} to reorder library loading to LKL written system calls to take control in place of the libc defined routines.
@@ -395,12 +390,12 @@ for a task is over, or if invoked as a part of a regular scheduling process. Tas
 \section{Solutions}
 \label{section:design}
 
-\subsection{glibc compatibility}
+\subsection{Custom glibc-2.31-based build}
 Initially we looked for simpler solutions to disable security checks through compilation flags but none were found. We also reached out to glibc maintainers for 
-suggestions on alternatives or introduce patches to match our needs, but made no progress, so we decided to make a custom glibc based native build which came with some
-installation cost as the build required increased disk space. This motivated us to also pursue a Docker alternative with a simpler setup and similar disk usage as older releases.
+suggestions on alternatives or introduce patches to match our needs, but made no progress, so we decided to make a custom glibc based native build automated 
+through bake which came with some
+installation cost as the build required increased disk space, so we came up with Docker alternative with a simpler setup and similar disk usage as older releases.
 
-\subsubsection{Custom glibc-2.31-based build}
 The section discusses how the modified glibc is patched to disable problematic security checks discussed above in Section 2.1, and also
 explains how the link procedure works.
 
@@ -462,10 +457,10 @@ The DCE Waf script supports both Docker based build and native builds on the sam
 build directory based on Waf configure and local environment variables and compiles DCE on top of it.
 
 \subsection{net-next-nuse-5.10}
-Net-next-nuse, a partial architecture port of the Linux kernel based on LibOS, was chosen over LKL due to design restrictions imposed by LKL's 
+Net-next-nuse, a semi architecture port of the Linux kernel based on LibOS, was chosen over LKL due to design restrictions imposed by it being a 
 complete architecture level port of
 the Linux kernel with uniprocessor limitations and scheduler independence. 
-Upgrading net-next-nuse presented additional challenges, as discussed below.
+There still was the issue of moving the net-next-nuse port forward to Linux 5.10, and below is the list of solutions.
 
 \subsubsection{Background}
 In this section, we review some of the major challenges which net-next-nuse solves and the basics of how the Linux kernel is modified to 
@@ -595,8 +590,9 @@ and allows the enabling or disabling of kernel-mode operation.  Most
 simulation operations involve the creation and transmission of packets.
 The program to realize this topology is found as an example named
 \emph{dce-udp-perf.cc} in the DCE codebase; we only had to make minor
-updates to that program likely used by \cite{Tazaki13} to realize the
-different configurations reported herein.
+updates to that program to realize the different configurations reported
+herein, and we believe that this is the program originally used
+in \cite{Tazaki13}.
 
 We do not know what version of DCE was used in \cite{Tazaki13} but we
 have reason to believe that it was not significantly different from the
@@ -619,7 +615,7 @@ different runtimes.  In \cite{Tazaki13}, an Intel Xeon 2.8 GHz machine was
 used; this CPU is rated with a single thread performance of 384 by PassMark
 Software's online CPU benchmark dataset\footnote{https://www.cpubenchmark.net}.
 We used an Intel Core i7-4770 3.40 GHz machine for tests of DCE version 1.11
-on Ubuntu 16.04.  This CPU has a single thread benchmark of 2167 according
+on Ubuntu 16.  This CPU has a single thread benchmark of 2167 according
 to the same database.  For tests of DCE version 1.12 (Ubuntu 20.04), we used
 a machine with an Intel Core i7-1065G7 1.30 GHz CPU.  This CPU has a
 single thread benchmark of 2416 according to the same database.  Use of
@@ -641,7 +637,7 @@ in \cite{Tazaki13}, and provides some new data for current simulation runs.
 In \cite{Tazaki13}, this figure was used to compare performance between
 DCE and Mininet-HiFi.  Here, we compare the previous data on DCE from
 \cite{Tazaki13} (read from the paper figure) with a similar experiment run
-with DCE version 1.11 on Ubuntu 16.04.  A single simulation trial for different
+with DCE version 1.11 on Ubuntu 16.  A single simulation trial for different
 values of network hops (4, 8, 16, 24, 48, 64) was run for 50 simulated
 seconds, and the number of received packets was divided by the elapsed
 wall clock time of each trial, to yield a packets-per-second measurement.
@@ -660,7 +656,7 @@ has not been tracked as part of DCE maintenance.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.43\textwidth]{figs/rate-vs-time.png}
-  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 16.04)}
+  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 16)}
   \label{fig:rate-vs-time}
 \end{figure}
 
@@ -706,7 +702,7 @@ these experiments.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.43\textwidth]{figs/rate-vs-time-dce12.png}
-  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 20.04)}
+  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 20)}
   \label{fig:rate-vs-time-u20}
 \end{figure}
 

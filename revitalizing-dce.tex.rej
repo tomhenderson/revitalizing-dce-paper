@@ -1,0 +1,15 @@
+--- revitalizing-dce.tex
++++ revitalizing-dce.tex
+@@ -395,10 +400,10 @@ for a task is over, or if invoked as a part of a regular scheduling process. Tas
+ \section{Solutions}
+ \label{section:design}
+ 
+-\subsection{Native and docker build}
++\subsection{glibc compatibility}
+ Initially we looked for simpler solutions to disable security checks through compilation flags but none were found. We also reached out to glibc maintainers for 
+ suggestions on alternatives or introduce patches to match our needs, but made no progress, so we decided to make a custom glibc based native build which came with some
+-installation cost as the build required increased disk space, so we came up with Docker alternative with a simpler setup and similar disk usage as older releases.
++installation cost as the build required increased disk space. This motivated us to also pursue a Docker alternative with a simpler setup and similar disk usage as older releases.
+ 
+ \subsubsection{Custom glibc-2.31-based build}
+ The section discusses how the modified glibc is patched to disable problematic security checks discussed above in Section 2.1, and also
