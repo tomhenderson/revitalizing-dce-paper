@@ -279,9 +279,9 @@ Finally, Section 6 concludes with directions for future work.
 \section{Challenges}
 
 \subsection{libio vtable mangling}
-DCE requires to map FILE operations to its internal custom handlers which work in synchronization with ns-3. DCE supports different operations on a FILE 
-through a Unix file abstraction, which requires all FILE operation calls to be mapped through it. This requires us to modify the vtable entries for the FILE
-object accordingly.
+DCE supports simulation scripts to run diffrent user applications which might write to stdout. Since, DCE is a discrete time simulator, simulations work on top of 
+ns-3 time keeping and every detail should be logged, printing to standard output would give unordered logs and might lead to overwriting of each others data. 
+To solve this, DCE hijacks the FILE vtable to take control over FILE operations and then map I/O to separate log files in organized log folders.
 
 The vtable is a table maintaining references to functions called for virtual functions defined for a class or an entity and changes dynamically 
 during runtime unlike compile time decisive function calls. The FILE structure is a library defined structure which defines the overall organization, 
@@ -340,10 +340,9 @@ with an error.
  
 
 \subsection{Linux Networking Stack for DCE}
-A Linux kernel library port allows DCE to export callback structures, abstracting the internal network data flow, coordinating Linux kernel synchronization, 
-process creation, and DCE-kernel task, IRQ and tasklet scheduling and synchronization, to expose a Linux-like execution environment for host applications. 
-
-Two potential projects or architectures to implement this are LKL and LibOS, which are discussed next.
+Two potential Linux-as-a-library projects are LKL and LibOS. Net-next-nuse was a version of kernel support under the LibOS
+framework, and one choice was to keep with this architecture to move to newer kernels, but another choice was to try to use the newly developed LKL with 
+a complete architecture level port. Both LibOS and LKL have been compared on various parameters below.
 
 \subsubsection{LKL}
 The Linux Kernel Library (LKL) is a library port of the Linux kernel that, through some pre-shipped helper shell scripts, can be used to hijack
@@ -391,7 +390,12 @@ for a task is over, or if invoked as a part of a regular scheduling process. Tas
 \section{Solutions}
 \label{section:design}
 
-\subsection{Custom glibc-2.31-based build}
+\subsection{Native and docker build}
+Initially we looked for simpler solutions to disable security checks through compilation flags but none were found. We also reached out to glibc maintainers for 
+suggestions on alternatives or introduce patches to match our needs, but made no progress, so we decided to make a custom glibc based native build which came with some
+installation cost as the build required increased disk space, so we came up with Docker alternative with a simpler setup and similar disk usage as older releases.
+
+\subsubsection{Custom glibc-2.31-based build}
 The section discusses how the modified glibc is patched to disable problematic security checks discussed above in Section 2.1, and also
 explains how the link procedure works.
 
@@ -404,17 +408,15 @@ mangling security checks of glibc,
 for which it is necessary to override the security checks on vtable pointer mangling. A security-patched glibc is built and installed on a specific location. and gcc is then made 
 to use that directory as the SYSROOT and also point the library, header and ELF executable lookup directories to our custom glibc using -L, -I, --rpath and --rpath-link.
 
-\subsection{Bake build automation}
-
+\subsubsection{Bake build automation}
 The process of the modified glibc and Linux compilation can be automated using Bake.
-Bake has a source configuration option named \textit{patch}, which can safely apply a patch, without re-applying if it has already been applied before.  
-This allows, for example, a large codebase to be fetched in its unaltered form, while Bake must maintain and apply only a small patch file to it.
+Bake has a source configuration option named \textit{patch}, which can safely apply a patch.
 Using this option, Bake applies the DCE-specific glibc patch, which disables the security checks on vtable mangling, and also disables the 
-PIE object checks for dlmopen position independent executable loading. The glibc is then build using its standard build steps. The Linux kernel headers
+PIE object checks for dlmopen position independent executable loading. The glibc is then built using its standard build steps. The Linux kernel headers
 files are then installed into the \texttt{/usr} directory of a custom glibc's sysroot. This finishes with a standard Linux-like system root to use for building 
 DCE without any issues. 
 
-\subsection{Docker environment for DCE}
+\subsubsection{Docker environment for DCE}
 DCE has a long dependency graph that includes dependencies across 
 system libraries, other projects, Linux kernel and tools, host specific requirements, etc. To ease the installation process and to standardize the process 
 across Docker supported Linux distros, a Docker based setup is discussed.
@@ -455,10 +457,9 @@ The DCE Waf script supports both Docker based build and native builds on the sam
 build directory based on Waf configure and local environment variables and compiles DCE on top of it.
 
 \subsection{net-next-nuse-5.10}
-Net-next-nuse, introduced above, is an architecture port of the Linux kernel, which resorts to selective kernel module linking and which takes control over 
-critical kernel 
-components such as memory SLAB allocators through internal DCE callbacks mapped to the internal SLIB interface, 
-task schedulers and timer functions, thereby providing the Linux network stack as library through an exported API.
+Net-next-nuse, an architecture port of the Linux kernel based on LibOS, was chosen over LKL due to design restrictions imposed by it being an architecture level port of
+the Linux kernel with uniprocessor limitations and scheduler independence. 
+There still was the issue of moving the net-next-nuse port forward to Linux 5.10, and below is the list of solutions.
 
 \subsubsection{Background}
 In this section, we review some of the major challenges which net-next-nuse solves and the basics of how the Linux kernel is modified to 
