@@ -487,8 +487,7 @@ them using DCE imported functions mapped to TaskManager utilities. As a result, 
 \texttt{schedule()} or \texttt{schedule\_timeout()}, and control is passed to DCE to take care of it. 
 
 \subsubsection{Virtual kernel task and its real fiber equivalent}
-net-next-nuse uses exported functions and internal DCE calls to allow kernel task creation,  which is exposed to net-next-nuse through an API during library object.
-initialization.
+net-next-nuse uses exported functions and internal DCE calls to allow kernel task creation,  which is exposed to net-next-nuse through an API during library object initialization.
 
 \sloppy Every new task inside the kernel-- for example, a syscall--
 creates an internal kernel thread.  When a system boots up, there has to be some initial task that invokes the \texttt{start\_kernel(...)} 
