@@ -337,7 +337,7 @@ a \textit{Fatal error: glibc detected an invalid stdio handle} runtime error.
 Position-independent-executables (PIE) are applications compiled with special compiler flags that allow the application to be loaded into an arbitrary
 memory address, not depending on absolute symbol addresses. DCE needs to have position independent executables, so that when they are loaded into memory,
 the symbol positions in memory are dynamic, giving control over when the application main is called in a simulation.To implement this, DCE uses the \textit{CoojaLoader}
-which uses \textit{dlmopen} under the hood to load the executable into memory. In glibc library versions newer than 2.25, security checks have been introduced to 
+which uses \textit{dlopen} under the hood to load the executable into memory. In glibc library versions newer than 2.25, security checks have been introduced to 
 identify such PIE objects being loaded through \textit{dlmopen}, and in case the \texttt{DF\_1\_PIE} flag is found in the object's ELF dynamic headers, it will abort 
 with an error.
  
