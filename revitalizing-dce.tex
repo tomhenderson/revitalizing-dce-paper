@@ -452,7 +452,7 @@ later be changed from inside the Docker container to point to a custom glibc bui
 used by the DCE Waf to compile DCE. The Docker compose also sets up a volume. A Docker volume is a mechanism which lets Docker containers 
 use persisting data from within the container. Docker containers can attach volumes to themselves
 and map specific directories from withing the Docker container to the host directory. Any changes made to that directory within the Docker container
-are visible and persist on the mapped host directory, and also vice-verso. This is a key requirement for us, as ns-3 projects are used by both 
+are visible and persist on the mapped host directory, and also vice-versa. This is a key requirement for us, as ns-3 projects are used by both 
 end users who wish to just simulate programs without library changes, and researchers who need to be able to make changes 
 to the ns-3 library code and rapidly test it, and also access simulation output files on local file explorers and 
 third party applications. We  therefore attach a volume which maps the \emph{/home/bake} directory from within the Docker container to the bake directory on 
