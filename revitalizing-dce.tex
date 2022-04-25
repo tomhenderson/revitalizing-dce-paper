@@ -516,7 +516,7 @@ Some of the new additions made to original initcall list are:
 \begin{itemize}
   \item vfs\_caches\_init\_early: To allow mounting of file systems such as \texttt{/proc} and file operations, which require the linked lists for 
   dcache (Directory Entry Cache, which helps fast lookup of recent paths) and inode.
-  \item cred\_init: Steps up the \texttt{creds\_jar} cache which is required by the LSM \hyperref[Section_LSM]{3.4.7}, fs module and 
+  \item cred\_init: Steps up the \texttt{creds\_jar} cache which is required by the LSM(Linux Security Module) \hyperref[Section_LSM]{3.4.7}, fs module and 
   while creds initialization for kernel task creation.
   \item proc\_root\_init: Sets up the \texttt{/proc} filesystem root cache, symlinks for mounts, net namespace for proc, and required directories.
 \end{itemize}
