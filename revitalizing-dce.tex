@@ -410,7 +410,7 @@ shared library \texttt{libc-ns3.so} is created with symbols tagged as either NAT
 inside the DCE source code. Users compile their applications with an extra -fPIC and -pie flag, which helps DCE load the applications dynamically into the DCE process 
 address space. The \emph{main} function of these application are then called based on the simulation script, which if requiring FILE operations would require DCE to override the vtable 
 mangling security checks of glibc, 
-for which it is necessary to override the security checks on vtable pointer mangling. A security-patched glibc is built and installed on a specific location. and gcc is then made 
+for which it is necessary to override the security checks on vtable pointer mangling. A patched glibc(security checks bypassed), is built and installed on a specific location. and gcc is then made 
 to use that directory as the SYSROOT and also point the library, header and ELF executable lookup directories to our custom glibc using -L, -I, --rpath and --rpath-link.
 
 \subsubsection{Bake build automation}
