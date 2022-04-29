@@ -148,14 +148,14 @@ on performance profiling to improve execution speed.
 
 \ccsdesc[500]{Software and its engineering~Application specific development environments}
 
-\keywords{ns-3}
+\keywords{ns-3, network simulation}
 
 %%
 %% This command processes the author and affiliation and title
 %% information and builds the first part of the formatted document.
 \maketitle
 
-\section{Introduction}
+\section{INTRODUCTION}
 
 ns-3 is a popular discrete-event network simulator, written in C++, with
 simulation models across all layers of the network stack.  The lowest level
@@ -183,39 +183,7 @@ protocols (e.g., modern TCP, routing protocols such as OSPF and BGP)
 without implementing them from scratch or making intrusive changes to
 the original code. 
 
-\begin{figure*}[h!]
-  \centering
-    \includegraphics[width=0.9\textwidth]{figs/architecture.png}
-  \caption{DCE architecture (redrawn from Figure 1 of [1]) with recent extensions highlighted}
-  \label{fig:architecture}
-\end{figure*}
-
-Figure \ref{fig:architecture} provides an architectural overview of DCE;
-this figure is partially redrawn from a similar Figure 1 of \cite{Tazaki13},
-with extensions to highlight the contributions reported on herein.
-In the lower center are ns-3 libraries; these libraries, along with simulation
-programs that link to them, are the typical ns-3 simulation components.
-Sitting above ns-3, in this diagram, is DCE.  DCE provides additional
-libraries that can be used in place of ns-3 libraries, at the TCP/IP and
-application layers.  The box bounding TCP, UDP, IPv4, and IPv6 depicts 
-how the Linux (or FreeBSD) kernel is itself built as a library.  Data
-packets flow across the boundary between a Linux struct net\_device and
-the ns-3 NetDevice object, and additional system support, such as providing
-time routines to kernel code, is synchronized with the ns-3 core.
-The DCE virtualization core layer manages resources for the various DCE
-applications, including file system access, heap- and stack-allocated
-memory, global variable handling, and thread management.
-Above the (optional) DCE kernel library is a POSIX interface layer that
-DCE applications link to.  This layer redirects system calls, such as a
-call to open a socket, to ns-3 or the DCE kernel; in essence, it reimplements
-and redirects parts of the C standard library.  DCE applications are compiled
-and linked with a few extra arguments such that they are built as 
-position-independent executables (PIE), and a special DCE Executable and
-Linkable Format (ELF) program loader
-ensures that all of the application's symbols can be loaded multiple times
-(as needed) into the ns-3 address space.
-
-\sloppy DCE is a sophisticated piece of software, and after an intensive period
+DCE is a sophisticated piece of software, and after an intensive period
 of development and initial releases, the maintenance of DCE has been
 semi-dormant for the past five years or so.  As a result, the host
 operating systems that DCE is compatible with are stuck in the past.
@@ -236,26 +204,68 @@ recent Linux releases and kernel stack versions.
 The project required
 a lot of adjustments to DCE to account for changes in Linux and in the
 C (and C++) standard library (on Linux, this library is called \emph{glibc}).
-Figure \ref{fig:architecture} highlights one of the outcomes; the need to
-include a modified, custom version of the glibc standard library.  To
-simplify the installation burden on users, we also developed a Docker
-container framework with a pre-built modified glibc.  The reasons for
-doing so are described in Sections 2 and 3.  Finally, we updated the
+To simplify the installation burden on users, we also developed a Docker
+container framework with a pre-built modified glibc.  
+Finally, we updated the
 version of the Linux kernel library for DCE from kernel version 4.4 
 to kernel version 5.10.  A new DCE release (1.12) is being prepared with
 capability to run on Ubuntu 20.04, and the use of Docker will facilitate
 use on other modern Linux systems as well.
 
-The rest of this paper is organized as follows.  Section 2 provides an
-overview on the technical challenges due to Linux and glibc evolution.
-Section 3 outlines our solutions to these challenges.
-Section 4 presents a performance evaluation of the new software.
-Section 5 describes related work.
-Finally, Section 6 concludes with directions for future work.
+The rest of this paper is organized as follows.  Section 2 provides a summary
+overview of DCE.  Sections 3 through 5 describe in detail the challenges
+in upgrading DCE; section 3 discusses core system issues, section 4 discusses
+network stack upgrades, and section 5 discusses build and installation.
+Section 6 presents a performance evaluation of the new software.
+Section 7 describes related work.
+Finally, section 8 concludes with directions for future work.
 
-\section{Challenges}
+\begin{figure*}[h!]
+  \centering
+    \includegraphics[width=0.9\textwidth]{figs/architecture.png}
+  \caption{DCE architecture (redrawn from Figure 1 of [1]) with recent extensions highlighted}
+  \label{fig:architecture}
+\end{figure*}
 
-\subsection{libio vtable redirection}
+\section{DCE OVERVIEW}
+
+ns-3 is designed as a set of simulation libraries that can be linked together
+with a main program.  DCE extends ns-3 by providing several additional
+libraries that enable the reuse of pre-existing application and network
+stack code within ns-3.
+Figure \ref{fig:architecture} provides an architectural overview of DCE;
+this figure is partially redrawn from a similar Figure 1 of \cite{Tazaki13},
+with extensions to highlight the contributions reported on herein.
+In the lower center are ns-3 libraries; these libraries, along with simulation
+programs that link to them, are the typical ns-3 simulation components.
+Sitting above ns-3, in this diagram, is DCE.  DCE provides additional
+libraries that can be used in place of ns-3 libraries, at the TCP/IP and
+application layers.  The box bounding TCP, UDP, IPv4, and IPv6 depicts 
+how the Linux (or FreeBSD) kernel is itself built as a library.  Data
+packets flow across the boundary between a Linux \texttt{struct net\_device} and
+the ns-3 NetDevice object, and additional system support, such as providing
+time routines to kernel code, is synchronized with the ns-3 core.
+The DCE virtualization core layer manages resources for the various DCE
+applications, including file system access, heap- and stack-allocated
+memory, global variable handling, and thread management.
+Above the (optional) DCE kernel library is a POSIX interface layer that
+DCE applications link to.  This layer redirects system calls, such as a
+call to open a socket, to ns-3 or the DCE kernel; in essence, it reimplements
+and redirects parts of the C standard library.  DCE applications are compiled
+and linked with a few extra arguments such that they are built as 
+position-independent executables (PIE), and a special DCE Executable and
+Linkable Format (ELF) program loader
+ensures that all of the application's symbols can be loaded multiple times
+(as needed) into the ns-3 address space.
+
+\section{CORE SYSTEM ISSUES}
+The central capability of DCE is the provision of selected core system services
+in a way that enables selected data flow to bypass normal system interfaces
+and instead be redirected to or managed by the simulator.  This section
+describes some challenges in maintaining techniques that DCE had been
+relying on but that became unavailable in recent Linux versions.
+
+\subsection{libio vtable Redirection}
 DCE user applications will typically write to output streams (e.g., stdout).
 Since DCE may
 load multiple application instances, printing to standard output
@@ -318,21 +328,40 @@ which uses \textit{dlopen} under the hood to load the executable into memory. In
 identify such PIE objects being loaded through \textit{dlmopen}, and in case the \texttt{DF\_1\_PIE} flag is found in the object's ELF dynamic headers, it will abort 
 with an error.
  
+\subsection{Customizing glibc}
+The solution to the above two issues is to provide a custom glibc for DCE.
+Initially we looked for simpler solutions to disable security checks through compilation flags, but none were found. We also reached out to glibc maintainers for 
+suggestions on alternatives or introduce patches to match our needs, but made no progress, so we decided to make a custom glibc based native build which came with some
+installation cost as the build required increased disk space usage from about 8 GB to about 14 GB of space. This motivated us to also pursue a Docker alternative with a simpler setup and disk usage similar to older releases.
 
-\subsection{Linux Networking Stack for DCE}
-Supporting the Linux networking stack involves more coding work, and we faced
-a choice when upgrading DCE kernel support-- either move to a newer project
-called the Linux Kernel Library (LKL) or stay with what has been called
-\emph{net-next-nuse}, within the LibOS framework.
+The DCE script \texttt{dcemakeversion.c} helps generate .version files for all the system shared library components that are statically linked to DCE's custom libc. A 
+shared library \texttt{libc-ns3.so} is created with symbols tagged as either NATIVE or DCE based on their position of declaration, which are mapped through the 
+\texttt{libc\_setup} function. The DCE type symbols are implemented 
+inside the DCE source code. Users compile their applications with an extra -fPIC and -pie flag, which helps DCE load the applications dynamically into the DCE process 
+address space. The \emph{main} function of these application are then called based on the simulation script, which if requiring FILE operations would require DCE to override the vtable 
+mangling security checks of glibc, 
+for which it is necessary to override the security checks on vtable pointer mangling. A patched glibc (with security checks bypassed), is built and installed on a specific location. and gcc is then made 
+to use that directory as the SYSROOT and also point the library, header and ELF executable lookup directories to our custom glibc using -L, -I, --rpath and --rpath-link.
+
+\section{NETWORK STACK ISSUES}
+
+With a bit more porting effort, previous versions of DCE managed to support
+the Linux (and FreeBSD) networking stacks as alternatives to the native ns-3
+TCP/IP stacks.  However, the fast-paced Linux kernel evolution creates a
+maintenance challenge, and the most recent Linux kernel supported by DCE
+has been Linux kernel 4.4 (from 2016).  To upgrade this, we faced a choice 
+of either staying with the current solution, \emph{net-next-nuse}, within
+the LibOS framework or moving to a newer project
+called the Linux Kernel Library (LKL).
 Both LibOS and LKL have been compared on various parameters below.
 
-\subsubsection{Linux Kernel Library}
+\subsection{Linux Kernel Library}
 LKL is a thorough library port of the Linux kernel that, through some pre-shipped helper shell scripts, can be used to hijack
 all system calls made by a host application and map them through the ported Linux kernel rather than through system defined implementations. It also allows one 
 to setup network interfaces such as TAP, RAW, VDE , etc. with custom gateways, netmasks, IP addresses, etc. with the help of JSON configuration files. These helper
 shell scripts make use of \texttt{LD\_PRELOAD} to reorder library loading to LKL written system calls to take control in place of the libc defined routines.
  
-\subsubsection{LibOS}
+\subsection{LibOS}
 LibOS uses the same internal architecture as does \textit{net-next-nuse},
 the Linux DCE kernel framework for previous releases.
 It is also a Linux kernel port that works on the principle of selective 
@@ -341,18 +370,18 @@ to include only specific kernel files and
 symbols that are needed for executing on top of the Linux kernel with \textit{nuse}, which works similar to LKL by hijacking system calls 
 and rerouting them through \emph{net-next-nuse} and kernel-defined routines.
 
-\subsubsection{LKL vs. LibOS}
+\subsection{LKL vs. LibOS}
 We conducted a comparison of LKL and LibOS approaches according to different design parameters and considerations for a complex application framework such as
 DCE with very specific demands from its underlying network stack.
 
-\paragraph{Linux feature support and maintenance}
+\subsubsection{Linux feature support and maintenance}
 Regarding the ease of extending support for Linux features that are compiled into the shared library port and 
 can be used through the API, LKL seems to win here, as adding support for new features in later kernels can be as easy as a git rebase, because no kernel internal code  
 is manipulated and also because the kernel is built using minimal changes to the original Linux build steps. LibOS, on the other hand, would require selective Linux 
 kernel linking, bridges the gap between application workspace and Linux kernel networking stack with the help of glue code, kernel component connector code, and user 
 application provided exported functions and callbacks for proper execution, which increases maintenance cost.
 
-\paragraph{Library kernel boot order and scheduling}
+\subsubsection{Library kernel boot order and scheduling}
 Both LKL and LibOS differ from each other on how they initialize the kernel and schedule tasks, which also determines many execution factors of DCE. 
 
 LKL spins up a high level CPU lock-controlled thread, which makes calls to \texttt{start\_kernel}. Since LKL is a uniprocessor system, it initializes 
@@ -369,82 +398,12 @@ scheduler. LibOS creates an ns-3 task copy for each kernel task which is created
 etc. Each such task maps with itself a callback function which should be called once the wait time
 for a task is over, or if invoked as a part of a regular scheduling process. Tasks are processed by popping the ns-3 task queue.
 
-\section{Solutions}
-\label{section:design}
-
-\subsection{glibc compatibility}
-Initially we looked for simpler solutions to disable security checks through compilation flags but none were found. We also reached out to glibc maintainers for 
-suggestions on alternatives or introduce patches to match our needs, but made no progress, so we decided to make a custom glibc based native build which came with some
-installation cost as the build required increased disk space. This motivated us to also pursue a Docker alternative with a simpler setup and similar disk usage as older releases.
-
-\subsubsection{Custom glibc-2.31-based build}
-The section discusses how the modified glibc is patched to disable problematic security checks discussed above in Section 2.1, and also
-explains how the link procedure works.
-
-The DCE script \texttt{dcemakeversion.c} helps generate .version files for all the system shared library components that are statically linked to DCE's custom libc. A 
-shared library \texttt{libc-ns3.so} is created with symbols tagged as either NATIVE or DCE based on their position of declaration, which are mapped through the 
-\texttt{libc\_setup} function. The DCE type symbols are implemented 
-inside the DCE source code. Users compile their applications with an extra -fPIC and -pie flag, which helps DCE load the applications dynamically into the DCE process 
-address space. The \emph{main} function of these application are then called based on the simulation script, which if requiring FILE operations would require DCE to override the vtable 
-mangling security checks of glibc, 
-for which it is necessary to override the security checks on vtable pointer mangling. A patched glibc(security checks bypassed), is built and installed on a specific location. and gcc is then made 
-to use that directory as the SYSROOT and also point the library, header and ELF executable lookup directories to our custom glibc using -L, -I, --rpath and --rpath-link.
-
-\subsubsection{Bake build automation}
-The process of the modified glibc and Linux compilation can be automated using Bake.
-Bake has a source configuration option named \textit{patch}, which can safely apply a patch.
-Using this option, Bake applies the DCE-specific glibc patch, which disables the security checks on vtable mangling, and also disables the 
-PIE object checks for dlmopen position independent executable loading. The glibc is then built using its standard build steps. The Linux kernel headers
-files are then installed into the \texttt{/usr} directory of a custom glibc's sysroot. This finishes with a standard Linux-like system root to use for building 
-DCE without any issues. 
-
-\subsubsection{Docker environment for DCE}
-DCE has a long dependency graph that includes dependencies across 
-system libraries, other projects, Linux kernel and tools, host specific requirements, etc. To ease the installation process and to standardize the process 
-across Docker supported Linux distros, a Docker based setup is discussed.
-
-
-\begin{figure}[!htb]
-  \centering
-    \includegraphics[width=0.30\textwidth]{figs/docker-architecture.jpg}
-
-  \caption{DCE Docker architecture composition}
-  \label{fig:docker}
-\end{figure}
-
-
-The Docker release consists of the Docker network setup shown in Figure \ref{fig:docker}, which is orchestrated using a Docker Compose script. 
-It consists of the Docker container, environment variables and volume. The Docker 
-container works on a custom image using Ubuntu-20.04 as the base image. A Docker image is collection of image layers. Each image layer is a 
-Dockerfile command which adds up to create the final Docker environment for that image. The Docker image has been optimized to use a minimal number of layers, and 
-all redundant layers are merged together. A layer for installing all system dependencies and libraries ensures all listed and unlisted bake 
-dependencies for building DCE are satisfied. It also has a pre-compiled glibc bundled into the image itself. This helps us reduce the Docker 
-image size drastically as compared to building from source every time, which might consume GBs, but this layer takes up roughly 50 MB.
-It also has a default environment variable 
-\texttt{DCE\_WITH\_DOCKER=1} which is a flag variable for DCE's Waf script to try and execute a Docker based build.
-
-The container, as discussed before, comes with a pre-compiled glibc-2.31 and so the user does not need to build the modified glibc again from source.
-The environment variable \texttt{DCE\_WITH\_GLIBC} tells Waf where to look for the modified glibc build directory.  This environment variable can 
-later be changed from inside the Docker container to point to a custom glibc build directory if the user wishes to do so. This glibc build is then 
-used by the DCE Waf to compile DCE. The Docker compose also sets up a volume. A Docker volume is a mechanism which lets Docker containers 
-use persisting data from within the container. Docker containers can attach volumes to themselves
-and map specific directories from withing the Docker container to the host directory. Any changes made to that directory within the Docker container
-are visible and persist on the mapped host directory, and also vice-versa. This is a key requirement for us, as ns-3 projects are used by both 
-end users who wish to just simulate programs without library changes, and researchers who need to be able to make changes 
-to the ns-3 library code and rapidly test it, and also access simulation output files on local file explorers and 
-third party applications. We  therefore attach a volume which maps the \emph{/home/bake} directory from within the Docker container to the bake directory on 
-the host.
-
-The DCE Waf script supports both Docker based build and native builds on the same branch. It selects the glibc 
-build directory based on Waf configure and local environment variables and compiles DCE on top of it.
-
 \subsection{net-next-nuse-5.10}
 Net-next-nuse, a partial architecture port of the Linux kernel based on LibOS, was chosen over LKL due to design restrictions imposed by LKL's 
 complete architecture level port of
 the Linux kernel with uniprocessor limitations and scheduler independence. 
 Upgrading net-next-nuse presented additional challenges, as discussed below.
 
-\subsubsection{Background}
 In this section, we review some of the major challenges which net-next-nuse solves and the basics of how the Linux kernel is modified to 
 accommodate this type of architecture.
 
@@ -543,7 +502,58 @@ a \texttt{register\_netdev(...)} call.
 This returns back a forward declared struct SimDevice which is used as a NetDevice object inside ns-3 which is required by ns-3's core networking modules.
 \fi
 
-\section{Performance Evaluation}
+\section{BUILD AND INSTALLATION ISSUES}
+
+\subsection{Bake build automation}
+The process of the modified glibc and Linux compilation can be automated using Bake.
+Bake has a source configuration option named \textit{patch}, which can safely apply a patch.
+Using this option, Bake applies the DCE-specific glibc patch, which disables the security checks on vtable mangling, and also disables the 
+PIE object checks for dlmopen position independent executable loading. The glibc is then built using its standard build steps. The Linux kernel headers
+files are then installed into the \texttt{/usr} directory of a custom glibc's sysroot. This finishes with a standard Linux-like system root to use for building 
+DCE without any issues. 
+
+\subsection{Docker environment for DCE}
+DCE has a long dependency graph that includes dependencies across 
+system libraries, other projects, Linux kernel and tools, host specific requirements, etc. To ease the installation process and to standardize the process 
+across Docker supported Linux distros, a Docker based setup is discussed.
+
+
+\begin{figure}[!htb]
+  \centering
+    \includegraphics[width=0.30\textwidth]{figs/docker-architecture.jpg}
+
+  \caption{DCE Docker architecture composition}
+  \label{fig:docker}
+\end{figure}
+
+
+The Docker release consists of the Docker network setup shown in Figure \ref{fig:docker}, which is orchestrated using a Docker Compose script. 
+It consists of the Docker container, environment variables and volume. The Docker 
+container works on a custom image using Ubuntu-20.04 as the base image. A Docker image is collection of image layers. Each image layer is a 
+Dockerfile command which adds up to create the final Docker environment for that image. The Docker image has been optimized to use a minimal number of layers, and 
+all redundant layers are merged together. A layer for installing all system dependencies and libraries ensures all listed and unlisted bake 
+dependencies for building DCE are satisfied. It also has a pre-compiled glibc bundled into the image itself. This helps us reduce the Docker 
+image size drastically as compared to building from source every time, which might consume GBs, but this layer takes up roughly 50 MB.
+It also has a default environment variable 
+\texttt{DCE\_WITH\_DOCKER=1} which is a flag variable for DCE's Waf script to try and execute a Docker based build.
+
+The container, as discussed before, comes with a pre-compiled glibc-2.31 and so the user does not need to build the modified glibc again from source.
+The environment variable \texttt{DCE\_WITH\_GLIBC} tells Waf where to look for the modified glibc build directory.  This environment variable can 
+later be changed from inside the Docker container to point to a custom glibc build directory if the user wishes to do so. This glibc build is then 
+used by the DCE Waf to compile DCE. The Docker compose also sets up a volume. A Docker volume is a mechanism which lets Docker containers 
+use persisting data from within the container. Docker containers can attach volumes to themselves
+and map specific directories from withing the Docker container to the host directory. Any changes made to that directory within the Docker container
+are visible and persist on the mapped host directory, and also vice-versa. This is a key requirement for us, as ns-3 projects are used by both 
+end users who wish to just simulate programs without library changes, and researchers who need to be able to make changes 
+to the ns-3 library code and rapidly test it, and also access simulation output files on local file explorers and 
+third party applications. We  therefore attach a volume which maps the \emph{/home/bake} directory from within the Docker container to the bake directory on 
+the host.
+
+The DCE Waf script supports both Docker based build and native builds on the same branch. It selects the glibc 
+build directory based on Waf configure and local environment variables and compiles DCE on top of it.
+
+\section{PERFORMANCE EVALUATION}
+
 We describe some performance evaluations of the DCE code, following the
 approach described in \cite{Tazaki13}.  The purpose of this section is to
 compare the runtime performance of different versions of DCE and different
@@ -718,7 +728,7 @@ or profiled; the differences were discovered during the course of preparing
 this paper.  The small performance cost of running within a Docker container,
 however, may be worth the convenience to future users.
 
-\section{Related Work}
+\section{RELATED WORK}
 We do not provide a lengthy list of other simulation frameworks related
 to DCE, or other different approaches to mixing implementation code with
 simulations; the interested reader is directed to \cite{Tazaki13} and
@@ -754,7 +764,7 @@ result that a DCE experiment may run significantly faster on a single core
 machine than on a multi-core machine.   Further profiling of our performance
 results in this regard is definitely warranted. 
 
-\section{Conclusions}
+\section{CONCLUSIONS}
 %\end{document}  % This is where a 'short' article might terminate
 The paper discusses the way DCE was modernized to work on newer Linux environments, 
 use newer Linux networking stack and kernel and also compares against other alternatives. 
@@ -764,7 +774,8 @@ The next step would be to profile DCE further to understand what are the other p
 the runtime of scripts. We also plan to work on building a more modular Linux library port with an efficient 
 middleware notification based task synchronizer, which would have less maintenance cost and increased kernel feature availability.
  We also plan to work on Ipv6 support for net-next-nuse-5.10 on the same architecture as now. Building an elf-loader for the libc-2.31 will also be a 
-future effort, as it reduces DCE execution time drastically.
+future effort, as it reduces DCE execution time drastically.  Finally,
+integration with the new CMake-based ns-3 build system will be addressed.
 
 %ACKNOWLEDGMENTS are optional
 %\section{Acknowledgments}
