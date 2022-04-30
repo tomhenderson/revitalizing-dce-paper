@@ -90,21 +90,21 @@
 %% used to denote shared contribution to the research.
 %
 \author{Parth Pratim Chatterjee}
-\email{parth27official@gmail.com}
 \affiliation{%
   \institution{Kalinga Institute of Industrial Technology}
   \city{Bhubaneswar}
   \state{Odisha}
   \country{India}
 }
+\email{parth27official@gmail.com}
 \author{Thomas R. Henderson}
-\email{tomhend@uw.edu}
 \affiliation{%
   \institution{University of Washington}
   \city{Seattle}
   \state{Washington}
   \country{USA}
 }
+\email{tomhend@uw.edu}
 
 %%
 %% By default, the full list of authors will be used in the page
@@ -177,7 +177,7 @@ Very little code in the application typically needs to be adapted to
 be used in DCE; this helps to minimize long-term maintenance issues, as
 newer versions of applications do not need intrusive changes to keep
 working with ns-3.  DCE was later extended to cover the TCP/IP kernel
-code for Linux and FreeBSD operating systems.  This provides ns-3 users 
+code for Linux and FreeBSD operating systems.  In short, DCE provides ns-3 users 
 with the ability to run high-fidelity implementations of complicated
 protocols (e.g., modern TCP, routing protocols such as OSPF and BGP)
 without implementing them from scratch or making intrusive changes to
@@ -214,16 +214,16 @@ use on other modern Linux systems as well.
 
 The rest of this paper is organized as follows.  Section 2 provides a summary
 overview of DCE.  Sections 3 through 5 describe in detail the challenges
-in upgrading DCE; section 3 discusses core system issues, section 4 discusses
-network stack upgrades, and section 5 discusses build and installation.
+in upgrading DCE; Section 3 discusses core system issues, Section 4 discusses
+network stack upgrades, and Section 5 discusses build and installation.
 Section 6 presents a performance evaluation of the new software.
 Section 7 describes related work.
-Finally, section 8 concludes with directions for future work.
+Finally, Section 8 concludes with directions for future work.
 
 \begin{figure*}[h!]
   \centering
     \includegraphics[width=0.9\textwidth]{figs/architecture.png}
-  \caption{DCE architecture (redrawn from Figure 1 of [1]) with recent extensions highlighted}
+  \caption{DCE Architecture (Redrawn from Figure 1 of [1]) with Recent Extensions Highlighted}
   \label{fig:architecture}
 \end{figure*}
 
@@ -265,7 +265,7 @@ and instead be redirected to or managed by the simulator.  This section
 describes some challenges in maintaining techniques that DCE had been
 relying on but that became unavailable in recent Linux versions.
 
-\subsection{libio vtable Redirection}
+\subsection{\emph{libio vtable} Redirection}
 DCE user applications will typically write to output streams (e.g., stdout).
 Since DCE may
 load multiple application instances, printing to standard output
@@ -273,7 +273,7 @@ would give unordered logs and overwriting.
 To solve this, DCE hijacks the FILE vtable to take control over FILE operations and then maps I/O to separate log files in organized log folders.
 
  \emph{libio} is the glibc component that handle streams.  
-The vtable is a table maintaining references to functions called for virtual functions defined for a class or an entity, for run-time dispatch of function calls. 
+The \emph{vtable} is a table maintaining references to functions called for virtual functions defined for a class or an entity, for run-time dispatch of function calls. 
 The FILE structure is a library defined structure which defines the overall organization, 
 orientation and properties of any file I/O stream opened
 by the host application. It maintains different parameters for storing useful operational fields like the UNIX based file descriptor number of the 
@@ -282,7 +282,7 @@ Since FILE is a library defined entity, the library provides its own set of impl
 Whenever an \textit{\_IO\_FILE} stream is allocated by the kernel, a contiguous memory location is allocated as a block called \textit{\_IO\_FILE\_plus}. 
 The \textit{\_IO\_FILE\_plus} structure is declared as follows:
 
-\begin{lstlisting}[style=CStyle]     
+\begin{lstlisting}[style=CStyle,numbers=none]
 struct _IO_FILE_plus
 {
   FILE file;
@@ -308,7 +308,7 @@ custom written function pointers, and then re-point the vtable field of the dumm
 control over stream operations, which can now be routed through DCE and made to behave as ns-3 streams, Unix FD streams, etc. based on the type of file 
 descriptor that is defined.
 
-\sloppy Post libc version 2.25, security features have been implemented to identify 
+\sloppy After libc version 2.25, security features have been implemented to identify 
 and prevent block buffer overflow attacks on the FILE object. Whenever any FILE
 operation is executed, glibc 
 verifies the FILE object's vtable. It makes a call to 
@@ -320,7 +320,7 @@ where FILE pointer  objects are passed to threads, which are not in the currentl
 overwrites the \textit{\_IO\_jump\_t}, it does not lie in \textit{libio\_IO\_vtables} section and it also does not pass the pointer mangling sanity checks, leading to 
 a \textit{Fatal error: glibc detected an invalid stdio handle} runtime error.
 
-\subsection{PIE loading and usage}
+\subsection{PIE Loading and Usage}
 Position-independent-executables (PIE) are applications compiled with special compiler flags that allow the application to be loaded into an arbitrary
 memory address, not depending on absolute symbol addresses. DCE needs to have position independent executables, so that when they are loaded into memory,
 the symbol positions in memory are dynamic, giving control over when the application main is called in a simulation.To implement this, DCE uses the \textit{CoojaLoader}
@@ -328,7 +328,7 @@ which uses \textit{dlopen} under the hood to load the executable into memory. In
 identify such PIE objects being loaded through \textit{dlmopen}, and in case the \texttt{DF\_1\_PIE} flag is found in the object's ELF dynamic headers, it will abort 
 with an error.
  
-\subsection{Customizing glibc}
+\subsection{Customizing \emph{glibc}}
 The solution to the above two issues is to provide a custom glibc for DCE.
 Initially we looked for simpler solutions to disable security checks through compilation flags, but none were found. We also reached out to glibc maintainers for 
 suggestions on alternatives or introduce patches to match our needs, but made no progress, so we decided to make a custom glibc based native build which came with some
@@ -374,14 +374,14 @@ and rerouting them through \emph{net-next-nuse} and kernel-defined routines.
 We conducted a comparison of LKL and LibOS approaches according to different design parameters and considerations for a complex application framework such as
 DCE with very specific demands from its underlying network stack.
 
-\subsubsection{Linux feature support and maintenance}
+\subsubsection{Linux Feature Support and Maintenance}
 Regarding the ease of extending support for Linux features that are compiled into the shared library port and 
 can be used through the API, LKL seems to win here, as adding support for new features in later kernels can be as easy as a git rebase, because no kernel internal code  
 is manipulated and also because the kernel is built using minimal changes to the original Linux build steps. LibOS, on the other hand, would require selective Linux 
 kernel linking, bridges the gap between application workspace and Linux kernel networking stack with the help of glue code, kernel component connector code, and user 
 application provided exported functions and callbacks for proper execution, which increases maintenance cost.
 
-\subsubsection{Library kernel boot order and scheduling}
+\subsubsection{Library Kernel Boot Order and Scheduling}
 Both LKL and LibOS differ from each other on how they initialize the kernel and schedule tasks, which also determines many execution factors of DCE. 
 
 LKL spins up a high level CPU lock-controlled thread, which makes calls to \texttt{start\_kernel}. Since LKL is a uniprocessor system, it initializes 
@@ -398,8 +398,8 @@ scheduler. LibOS creates an ns-3 task copy for each kernel task which is created
 etc. Each such task maps with itself a callback function which should be called once the wait time
 for a task is over, or if invoked as a part of a regular scheduling process. Tasks are processed by popping the ns-3 task queue.
 
-\subsection{net-next-nuse-5.10}
-Net-next-nuse, a partial architecture port of the Linux kernel based on LibOS, was chosen over LKL due to design restrictions imposed by LKL's 
+\subsection{\emph{net-next-nuse-5.10}}
+\emph{net-next-nuse}, a partial architecture port of the Linux kernel based on LibOS, was chosen over LKL due to design restrictions imposed by LKL's 
 complete architecture level port of
 the Linux kernel with uniprocessor limitations and scheduler independence. 
 Upgrading net-next-nuse presented additional challenges, as discussed below.
@@ -422,7 +422,7 @@ kernel modules and utilities. To avoid linking the scheduler, workqueue, waitque
 them using DCE imported functions mapped to TaskManager utilities. As a result, every time that some process wants to preempt and block, the kernel calls 
 \texttt{schedule()} or \texttt{schedule\_timeout()}, and control is passed to DCE to take care of it. 
 
-\subsubsection{Virtual kernel task and its real fiber equivalent}
+\subsubsection{Virtual Kernel Task and its Real Fiber Equivalent}
 net-next-nuse uses exported functions and internal DCE calls to allow kernel task creation,  which is exposed to net-next-nuse through an API during library object initialization.
 
 \sloppy Every new task inside the kernel-- for example, a syscall--
@@ -444,7 +444,7 @@ If it does not, it calls TaskManager::Start(...) to set it up, and every time
 TaskManager::TaskWait(...)  is called on a particular task, DCE can put the current job to sleep, and give the other tasks/fibers a chance to 
 execute their set of functions. 
  
-\subsubsection{Kernel initialization}
+\subsubsection{Kernel Initialization}
 The kernel initializers are divided into base init functions and roughly eight levels/types of initcalls, and export a start and end pointer of the list of initcall list. 
 The initcalls are stored in a special .initcall.init section of the final linked library, which are then copied to their respective positions through the linker.lds script.
 Some of the new additions made to original initcall list are: 
@@ -478,7 +478,7 @@ of the library called .init.data section using the \texttt{AT(ADDR(...))} direct
 We keep sections \texttt{lsm\_info.init} and \texttt{early\_lsm\_info.init} even if not referenced using the \texttt{KEEP} directive, 
 and also define start and end information sections of both.  The implementation of them were drawn from LKL's LSM definition.
 
-\subsubsection{Kernel code and net-next-nuse alignment}
+\subsubsection{Kernel Code and \emph{net-next-nuse alignment}}
 When net-next-nuse is loaded as a shared library into DCE and \texttt{lib\_init(...)} is called, it invokes certain kernel methods, which triggers 
 kernel initialization routines which help setup critical components such as the mount namespaces, vfs, kernel threads and tasks, etc. 
 Since Linux kernel 4.4.0, the
@@ -504,7 +504,7 @@ This returns back a forward declared struct SimDevice which is used as a NetDevi
 
 \section{BUILD AND INSTALLATION ISSUES}
 
-\subsection{Bake build automation}
+\subsection{Bake Build Automation}
 The process of the modified glibc and Linux compilation can be automated using Bake.
 Bake has a source configuration option named \textit{patch}, which can safely apply a patch.
 Using this option, Bake applies the DCE-specific glibc patch, which disables the security checks on vtable mangling, and also disables the 
@@ -512,20 +512,18 @@ PIE object checks for dlmopen position independent executable loading. The glibc
 files are then installed into the \texttt{/usr} directory of a custom glibc's sysroot. This finishes with a standard Linux-like system root to use for building 
 DCE without any issues. 
 
-\subsection{Docker environment for DCE}
+\subsection{Docker Environment for DCE}
 DCE has a long dependency graph that includes dependencies across 
 system libraries, other projects, Linux kernel and tools, host specific requirements, etc. To ease the installation process and to standardize the process 
 across Docker supported Linux distros, a Docker based setup is discussed.
-
 
 \begin{figure}[!htb]
   \centering
     \includegraphics[width=0.30\textwidth]{figs/docker-architecture.jpg}
 
-  \caption{DCE Docker architecture composition}
+  \caption{DCE Docker Architecture Composition}
   \label{fig:docker}
 \end{figure}
-
 
 The Docker release consists of the Docker network setup shown in Figure \ref{fig:docker}, which is orchestrated using a Docker Compose script. 
 It consists of the Docker container, environment variables and volume. The Docker 
@@ -563,7 +561,7 @@ a equivalent ns-3 (without DCE) simulation.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.43\textwidth]{figs/topology.png}
-  \caption{Simulation topology (redrawn from Figure 2 of \cite{Tazaki13})}
+  \caption{Simulation Topology (Redrawn from Figure 2 of \cite{Tazaki13})}
   \label{fig:topology}
 \end{figure}
 
@@ -618,7 +616,7 @@ corresponding ns-3 runtimes on each machine.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.43\textwidth]{figs/hops-vs-pps.png}
-  \caption{Packet processing performance as a function of number of network hops}
+  \caption{Packet Processing Performance as a Function of Number of Network Hops}
   \label{fig:hops-vs-pps}
 \end{figure}
 
@@ -646,7 +644,7 @@ has not been tracked as part of DCE maintenance.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.43\textwidth]{figs/rate-vs-time.png}
-  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 16.04)}
+  \caption{Sending Rate vs. Wall Clock Time on a Four Hop Topology for Different DCE Configurations (Ubuntu 16.04)}
   \label{fig:rate-vs-time}
 \end{figure}
 
@@ -692,7 +690,7 @@ these experiments.
 \begin{figure}[h!]
   \centering
     \includegraphics[width=0.43\textwidth]{figs/rate-vs-time-dce12.png}
-  \caption{Sending rate vs. wall clock time on a four hop topology for different DCE configurations (Ubuntu 20.04)}
+  \caption{Sending Rate vs. Wall Clock Time on a Four Hop Topology for Different DCE Configurations (Ubuntu 20.04)}
   \label{fig:rate-vs-time-u20}
 \end{figure}
 
@@ -715,12 +713,12 @@ kernel library version (4.4).  However, the DCE-1.12 version uses the
 modified glibc library.  The newer DCE version results in 75\% more runtime
 despite being on the faster machine.  
 
-The final two curves illustrate performance differences between the current
-kernel library version 4.4 and a new kernel library (5.10), and the
+The final two curves show performance differences between the current
+kernel library version 4.4 and the newer library (5.10), and the
 difference between running DCE natively on the host operating system vs.
 running within a Docker container.  The newer kernel library required
-about 16\% more runtime.   Running within a Docker container was observed
-to incur only about a 3\% performance hit.
+about 16\% more runtime.   Running within a Docker container incurred
+only about a 3\% performance drop.
 
 As of this writing, the performance differences between the newer DCE 1.12
 versions and the DCE 1.11 release have not been debugged
@@ -746,8 +744,8 @@ Clang/LLVM
 toolchain to convert applications to modules that can be integrated
 with a network simulation stack.  The NCTUns simulator \cite{Wang03}
 is a commercial simulator that advertises a 'kernel-reentrant' mode
-of supporting Linux network stack code in a simulation.  Both of these
-tools were developed during the same timeframe as DCE.
+of supporting Linux network stack code in a simulation.  Both of these tools
+were developed during the same timeframe as DCE.
 
 There also appears to be very little published regarding the extension
 of DCE or analyses of its performance.  The work by Ivey \cite{Ivey16}
@@ -770,12 +768,14 @@ The paper discusses the way DCE was modernized to work on newer Linux environmen
 use newer Linux networking stack and kernel and also compares against other alternatives. 
 It also suggests ways to improve project deployment using Docker and compares performance results across different platforms and stacks.
 
-The next step would be to profile DCE further to understand what are the other parameters which determine 
-the runtime of scripts. We also plan to work on building a more modular Linux library port with an efficient 
+Some planned next steps include profiling DCE further to understand 
+parameters determining the runtime of programs. We also have thoughts about
+building a more modular Linux library port with an efficient 
 middleware notification based task synchronizer, which would have less maintenance cost and increased kernel feature availability.
- We also plan to work on Ipv6 support for net-next-nuse-5.10 on the same architecture as now. Building an elf-loader for the libc-2.31 will also be a 
-future effort, as it reduces DCE execution time drastically.  Finally,
-integration with the new CMake-based ns-3 build system will be addressed.
+ The port of net-next-nuse to Linux 5.10 requires completion of IPv6 support.
+Restoring elf-loader compatibility for libc-2.31 i also a priority, as it
+reduces DCE execution time drastically.  Finally, we must update to the
+new ns-3 CMake build system.
 
 %ACKNOWLEDGMENTS are optional
 %\section{Acknowledgments}
