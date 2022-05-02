@@ -112,7 +112,7 @@
 %% other information printed in the page headers. This command allows
 %% the author to define a more concise list
 %% of authors' names for this purpose.
-\renewcommand{\shortauthors}{Chatterjee and Henderson}
+%\renewcommand{\shortauthors}{Chatterjee and Henderson}
 
 %%
 %% The abstract is a short summary of the work to be presented in the
@@ -190,8 +190,8 @@ operating systems that DCE is compatible with are stuck in the past.
 The most recent Linux distribution compatible with the latest (DCE-1.11)
 release is Ubuntu 16.04.  It has been estimated
  that, in 2020, the Linux kernel comprised 27.8 million lines of code and
-experienced 75,000 commits in the past year.  
-\footnote{\url{https://www.theregister.com/2020/01/06/linux\_2020\_kernel\_systemd\_code}}
+experienced 75,000 commits in the past
+year.\footnote{\url{https://www.theregister.com/2020/01/06/linux\_2020\_kernel\_systemd\_code}}
 Although
 DCE does not have to change for most of these commits, 
 the host operating system environment that DCE both emulates and exists
@@ -199,8 +199,8 @@ within undergoes frequent change, leading to a DCE maintenance burden.
 
 This paper reports on a recent ns-3 Google Summer of Code project to restore
 DCE's compatibility with
-recent Linux releases and kernel stack versions.
-\footnote{Final report and information on reproducing this paper's data can be found at \url{https://www.nsnam.org/wiki/GSOC2021DCE}} 
+recent Linux releases and kernel stack 
+versions.\footnote{Final report and information on reproducing this paper's data can be found at \url{https://www.nsnam.org/wiki/GSOC2021DCE}} 
 The project required
 a lot of adjustments to DCE to account for changes in Linux and in the
 C (and C++) standard library (on Linux, this library is called \emph{glibc}).
@@ -323,7 +323,7 @@ a \textit{Fatal error: glibc detected an invalid stdio handle} runtime error.
 \subsection{PIE Loading and Usage}
 Position-independent-executables (PIE) are applications compiled with special compiler flags that allow the application to be loaded into an arbitrary
 memory address, not depending on absolute symbol addresses. DCE needs to have position independent executables, so that when they are loaded into memory,
-the symbol positions in memory are dynamic, giving control over when the application main is called in a simulation.To implement this, DCE uses the \textit{CoojaLoader}
+the symbol positions in memory are dynamic, giving control over when the application main is called in a simulation.  To implement this, DCE uses the \textit{CoojaLoader}
 which uses \textit{dlopen} under the hood to load the executable into memory. In glibc library versions newer than 2.25, security checks have been introduced to 
 identify such PIE objects being loaded through \textit{dlmopen}, and in case the \texttt{DF\_1\_PIE} flag is found in the object's ELF dynamic headers, it will abort 
 with an error.
@@ -452,7 +452,7 @@ Some of the new additions made to original initcall list are:
 \begin{itemize}
   \item vfs\_caches\_init\_early: To allow mounting of file systems such as \texttt{/proc} and file operations, which require the linked lists for 
   dcache (Directory Entry Cache, which helps fast lookup of recent paths) and inode.
-  \item cred\_init: Steps up the \texttt{creds\_jar} cache which is required by the LSM(Linux Security Module) \hyperref[Section_LSM]{3.4.7}, fs module and 
+  \item cred\_init: Steps up the \texttt{creds\_jar} cache which is required by the LSM (Linux Security Module) \hyperref[Section_LSM]{3.4.7}, fs module and 
   while creds initialization for kernel task creation.
   \item proc\_root\_init: Sets up the \texttt{/proc} filesystem root cache, symlinks for mounts, net namespace for proc, and required directories.
 \end{itemize}
@@ -478,7 +478,7 @@ of the library called .init.data section using the \texttt{AT(ADDR(...))} direct
 We keep sections \texttt{lsm\_info.init} and \texttt{early\_lsm\_info.init} even if not referenced using the \texttt{KEEP} directive, 
 and also define start and end information sections of both.  The implementation of them were drawn from LKL's LSM definition.
 
-\subsubsection{Kernel Code and \emph{net-next-nuse alignment}}
+\subsubsection{Kernel Code and \emph{net-next-nuse} Alignment}
 When net-next-nuse is loaded as a shared library into DCE and \texttt{lib\_init(...)} is called, it invokes certain kernel methods, which triggers 
 kernel initialization routines which help setup critical components such as the mount namespaces, vfs, kernel threads and tasks, etc. 
 Since Linux kernel 4.4.0, the
@@ -601,7 +601,7 @@ CPU performance of a machine, execution of the same program on different CPUs
 will lead to
 different runtimes.  In \cite{Tazaki13}, an Intel Xeon 2.8 GHz machine was
 used; this CPU is rated with a single thread performance of 384 by PassMark
-Software's online CPU benchmark dataset\footnote{https://www.cpubenchmark.net}.
+Software's online CPU benchmark dataset.\footnote{https://www.cpubenchmark.net}
 We used an Intel Core i7-4770 3.40 GHz machine for tests of DCE version 1.11
 on Ubuntu 16.04.  This CPU has a single thread benchmark of 2167 according
 to the same database.  For tests of DCE version 1.12 (Ubuntu 20.04), we used
@@ -739,7 +739,7 @@ During that time period, more attention has been paid on the use of
 ns-3 emulation features or on container-based network experimentation
 frameworks such as Mininet \cite{Handigol12}; a recent tool in this regard is
 NeST \cite{Rai20}.  One of the most similar approaches to DCE appears to
-be the Open Network Emulator (ONE)\cite{Duggirala12}, which leverages the
+be the Open Network Emulator (ONE) \cite{Duggirala12}, which leverages the
 Clang/LLVM
 toolchain to convert applications to modules that can be integrated
 with a network simulation stack.  The NCTUns simulator \cite{Wang03}
