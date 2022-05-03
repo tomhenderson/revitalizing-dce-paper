@@ -678,8 +678,8 @@ next fastest configuration is the \emph{DCE 1.11 ELF} configuration, using
 DCE user-space and kernel code over the ns-3 simulated point-to-point links.
 The final curve is the \emph{DCE 1.11} curve that uses the DCE user-space
 and kernel code but with the default Cooja loader.  This curve shows that
-the use of the ELF loader conveys a significant performance benefit.
-While the Figure 5 of \cite{Tazaki13} includes plots for other network
+the use of the ELF loader leads to a significant performance benefit.
+While Figure 5 of \cite{Tazaki13} includes plots for other network
 diameters (up to 32 hops), we omit the larger topologies in our figure
 for clarity; the larger topologies display similar linear relationships.
 The horizontal dashed line depicted shows the performance point at which
@@ -773,8 +773,8 @@ parameters determining the runtime of programs. We also have thoughts about
 building a more modular Linux library port with an efficient 
 middleware notification based task synchronizer, which would have less maintenance cost and increased kernel feature availability.
  The port of net-next-nuse to Linux 5.10 requires completion of IPv6 support.
-Restoring elf-loader compatibility for libc-2.31 i also a priority, as it
-reduces DCE execution time drastically.  Finally, we must update to the
+Restoring elf-loader compatibility for libc-2.31 is also a priority, as it
+significantly reduces DCE execution time.  Finally, we must update to the
 new ns-3 CMake build system.
 
 %ACKNOWLEDGMENTS are optional
